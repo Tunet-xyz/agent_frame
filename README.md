@@ -31,6 +31,22 @@ vendor namespaces. Several community
 providers support Claude agents. The dated comparison and selection evidence are
 in [docs/provider-research.md](docs/provider-research.md).
 
+## MCP server
+
+The companion stdio server exposes catalogue discovery, backend details,
+Terraform configuration generation and inference-definition compilation through
+four MCP tools and two JSON resources. It uses the official Python MCP SDK and
+the same Terraform modules and catalogue:
+
+```shell
+uv sync --frozen
+uv run --frozen tunet-agents-mcp
+```
+
+Use Python 3.11+ and Terraform on `PATH` for definition compilation. The server
+generates configuration and templates without vendor credentials or deployments.
+See [MCP setup, client configuration and tools](docs/mcp.md).
+
 ## Usage
 
 Terraform 1.10 or later is required. See [examples/both](examples/both/main.tf)
@@ -39,7 +55,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.3.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.4.0"
   providers = {
     restapi = restapi
     claude  = claude
@@ -61,13 +77,13 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.3.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.3.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `//modules/mistral?ref=v0.3.0` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Gemini runtime | `//modules/gemini?ref=v0.3.0` | [gemini](examples/gemini/main.tf) | `google` |
-| Grok definition | `//modules/grok?ref=v0.3.0` | [grok](examples/grok/main.tf) | none |
-| Muse definition | `//modules/muse?ref=v0.3.0` | [muse](examples/muse/main.tf) | none |
-| Frontier definitions | `//modules/inference?ref=v0.3.0` | [frontier](examples/frontier/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.4.0` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.4.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.4.0` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.4.0` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.4.0` | [grok](examples/grok/main.tf) | none |
+| Muse definition | `//modules/muse?ref=v0.4.0` | [muse](examples/muse/main.tf) | none |
+| Frontier definitions | `//modules/inference?ref=v0.4.0` | [frontier](examples/frontier/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -82,7 +98,7 @@ For example, Muse uses the same common inputs without a provider declaration:
 
 ```hcl
 module "muse" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.3.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.4.0"
 
   name         = "Review assistant"
   model        = var.muse_model
@@ -201,6 +217,9 @@ terraform test
 python tests/integration.py
 python tests/google_integration.py
 python tests/frontier_integration.py
+uv sync --frozen
+uv run --frozen python tests/mcp_integration.py
+uv build --wheel
 ```
 
 The saved-agent and Google Python tests use the real, locked providers with local HTTP contract fixtures
@@ -212,6 +231,8 @@ application UI, so browser UI testing is not applicable.
 The frontier CLI checks initialize against an empty provider mirror and apply
 every profile without vendor calls or credentials. They check saved plans,
 updates, cleared instructions, endpoint changes, no-op plans, and destroy.
+The MCP suite connects to the actual stdio server, compiles definitions, validates
+generated Terraform, and checks legacy clients, errors and concurrent requests.
 
 Live vendor-account verification has not been performed. The fixtures
 cannot establish account entitlements, model availability, service-side

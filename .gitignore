@@ -10,3 +10,7 @@ crash.*.log
 .env.*
 __pycache__/
 *.pyc
+.venv/
+.cache/
+dist/
+*.egg-info/

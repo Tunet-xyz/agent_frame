@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tunet-agents-mcp"
+version = "0.4.0"
+description = "MCP interface to the Tunet Terraform agent catalogue and definition modules"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = ["Private :: Do Not Upload"]
+dependencies = ["mcp==2.3.0"]
+
+[project.scripts]
+tunet-agents-mcp = "tunet_agents_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tunet_agents_mcp"]
+
+# Whitelist source assets: never package Terraform caches, state or credentials.
+[tool.hatch.build.targets.wheel.force-include]
+"backends.json" = "tunet_agents_mcp/data/backends.json"
+"modules/definition/main.tf" = "tunet_agents_mcp/data/modules/definition/main.tf"
+"modules/definition/variables.tf" = "tunet_agents_mcp/data/modules/definition/variables.tf"
+"modules/inference/main.tf" = "tunet_agents_mcp/data/modules/inference/main.tf"
+"modules/inference/variables.tf" = "tunet_agents_mcp/data/modules/inference/variables.tf"
+"modules/inference/profiles.json" = "tunet_agents_mcp/data/modules/inference/profiles.json"
+"modules/grok/main.tf" = "tunet_agents_mcp/data/modules/grok/main.tf"
+"modules/grok/variables.tf" = "tunet_agents_mcp/data/modules/grok/variables.tf"
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "modules", "backends.json", "pyproject.toml", "uv.lock", "README.md", "docs/mcp.md"]

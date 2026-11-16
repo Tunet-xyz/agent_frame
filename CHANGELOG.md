@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.4.0
+
+- Add a local stdio MCP server using the official Python SDK, with four tools
+  for catalogue discovery, backend details, Terraform configuration generation
+  and provider-free definition compilation, plus two catalogue resources.
+- Compile definitions with the existing bundled Terraform modules in isolated
+  temporary workspaces; do not duplicate backend compilation in Python.
+- Generate provider configuration for implemented remote-agent/cloud adapters
+  with credential setup instructions and no embedded keys or deployments.
+- Add strict input models, literal Terraform string handling, structured MCP
+  results, dependency locking, and a wheel with whitelisted source assets.
+- Test actual stdio connections, legacy negotiation, concurrent requests, error
+  recovery, missing Terraform, and generated configurations; keep CI manual-only.
+
 ## v0.3.0
 
 - Add a Meta Muse entry point for Wonder, Spark and Ember definitions and

@@ -1,4 +1,4 @@
-# Verification — v0.3.0, 16 November 2026
+# Verification — v0.4.0, 16 November 2026
 
 Verified locally on Windows with Terraform 1.15.7 and Python 3.13. The locked
 providers are Mastercard REST API 2.0.1, Modus Agendi Claude Managed Agents
@@ -13,8 +13,12 @@ amd64; execution was on Windows.
 | `python tests/integration.py` | 5 passed |
 | `python tests/google_integration.py` | 1 passed |
 | `python tests/frontier_integration.py` | 2 passed |
-| Ruff check of all three Python integration scripts | Passed |
-| Initialize and validate all eight examples: both, openai, anthropic, grok, mistral, gemini, muse, frontier | All passed |
+| MCP integration suite over real stdio | 8 passed from source and installed wheel |
+| Validate MCP-generated Terraform configurations for all 14 implemented backends | Passed |
+| Wheel build and inspection | Passed; exactly 8 whitelisted source data assets |
+| Frozen dependency lock check | Passed |
+| Ruff check of the Python package and all four integration scripts | Passed |
+| Eight unchanged Terraform examples | Previously verified in v0.3.0 |
 | Local Markdown links and manual-only workflow configuration | Passed |
 
 The integration checks run the installed providers and actual Terraform CLI
@@ -47,14 +51,30 @@ model updates, no-op plans and destroy. It makes no inference requests. Source
 links and local catalogue paths were checked; the manual-only workflow includes
 the new suite and was not dispatched.
 
+The MCP suite starts actual client/server subprocesses from another directory
+with spaces, including legacy protocol negotiation and the console entry point.
+It checks four structured-output tools and two resources, every inference
+backend, a custom endpoint, concurrent compilation, missing Terraform, invalid
+inputs and recovery. Generated configurations for all implemented backends
+initialize and validate against a local provider mirror. Only a provider-free
+configuration is applied to test that template-looking prompt text stays literal.
+
+The built wheel was installed without editable source imports and the MCP suite
+passed again using its bundled catalogue and Terraform files. The package pins
+the official MCP Python SDK 2.3.0; its uv lock resolves 31 packages, including
+the project. Wheel contents exclude state, variable files, caches and credentials.
+Initial testing found missing structured output schemas and an AnyIO test-client
+cleanup issue; both were fixed before the successful runs.
+
 Fixtures use fake keys, inherit no vendor credentials, and use a local provider
 mirror after initialization. No live vendor agents were created or modified.
 Account permissions, model availability, and all vendor-side validation of
 nested tool definitions remain unverified against live APIs.
 
-UI testing is not applicable: this repository ships a Terraform module and CLI
-examples, with no browser or application UI. The affected CLI flows were tested
-with real providers. GitHub Actions was not run; its only trigger is
+UI testing is not applicable: this repository ships Terraform modules, CLI
+examples and a stdio MCP server, with no graphical application. The affected CLI
+and MCP flows were exercised with real providers and client/server processes.
+GitHub Actions was not run; its only trigger is
 `workflow_dispatch`, which an agent must never invoke.
 
 ## Verified implementation findings
