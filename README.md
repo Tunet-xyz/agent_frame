@@ -11,11 +11,18 @@ portable definition. This private Tunet module reuses existing providers:
 | Mistral | Beta Agents API through `Mastercard/restapi` | 2.0.1 |
 | Gemini on Google Cloud | Native ADK config through `hashicorp/google` | 8.11.0 |
 | Grok | Portable definition and Responses request template; no saved-agent CRUD found | No provider or Terraform credential |
+| Meta Muse | Portable definition and Responses request template for Wonder, Spark and Ember | No provider or Terraform credential |
+| DeepSeek, Qwen, Kimi, GLM, MiniMax, Cohere | Portable definition and native Chat Completions request templates | No provider or Terraform credential |
+| NVIDIA catalogue, OpenRouter, custom compatible endpoints | Portable definition and runtime request template | No provider or Terraform credential |
 
 Additional backends use independent entry points with the same core interface.
 See [the extension contract and cloud-provider review](docs/extending.md) and
 the machine-readable [capability catalogue](backends.json). The original root
 selector remains compatible with OpenAI/Claude deployments.
+
+See [Muse and frontier-model setup](docs/frontier.md) for the reviewed endpoints,
+regional requirements, runtime consumption, and how to add another model family.
+Model IDs are caller-selected; no moving latest-model aliases are hard-coded.
 
 OpenAI has an [official Terraform provider](https://developers.openai.com/api/docs/guides/terraform),
 but its current resource catalogue covers administration and webhooks rather than
@@ -32,7 +39,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.2.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.3.0"
   providers = {
     restapi = restapi
     claude  = claude
@@ -54,11 +61,13 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.2.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.2.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `//modules/mistral?ref=v0.2.0` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Gemini runtime | `//modules/gemini?ref=v0.2.0` | [gemini](examples/gemini/main.tf) | `google` |
-| Grok definition | `//modules/grok?ref=v0.2.0` | [grok](examples/grok/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.3.0` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.3.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.3.0` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.3.0` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.3.0` | [grok](examples/grok/main.tf) | none |
+| Muse definition | `//modules/muse?ref=v0.3.0` | [muse](examples/muse/main.tf) | none |
+| Frontier definitions | `//modules/inference?ref=v0.3.0` | [frontier](examples/frontier/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -68,6 +77,23 @@ one on the selected platform; it does not transfer sessions or history.
 configuration needs no root-selector edit. `modules/rest` supplies a reusable
 CRUD profile for vendors with a documented persistent REST agent API. Model
 inference compatibility alone is insufficient to use a saved-agent profile.
+
+For example, Muse uses the same common inputs without a provider declaration:
+
+```hcl
+module "muse" {
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.3.0"
+
+  name         = "Review assistant"
+  model        = var.muse_model
+  instructions = "Help the team review changes."
+}
+```
+
+For DeepSeek, Qwen, Kimi, GLM, MiniMax, Cohere, NVIDIA or OpenRouter, use
+`//modules/inference` with `profile` set to the corresponding catalogue key.
+Both entry points return `agent.id = null`, a portable `definition`, and a
+`runtime` request template. They make no inference requests during Terraform.
 
 ## Credentials
 
@@ -86,6 +112,10 @@ module's verified scope. The provider supplies the Managed Agents beta header.
 The Mistral example takes its key through the ephemeral `TF_VAR_api_key` input.
 Grok's definition requires no Terraform key; the consuming application reads
 `XAI_API_KEY` and supplies user input when making a runtime request.
+Muse and the other inference profiles likewise take only the **name** of a
+runtime credential environment variable. The application supplies the key;
+Terraform never reads it. Qwen requires `options.base_url` for the intended
+workspace and region. See [the profile reference](docs/frontier.md).
 
 Gemini uses the Google provider's existing ADC or workload identity. The adapter
 takes a project, region, and existing runtime service account. Its model and
@@ -129,9 +159,10 @@ Every entry point returns `agent`:
 }
 ```
 
-This module manages saved definitions. It does not start sessions, run prompts,
-deploy sandboxes, create scheduled runs, or manage ChatGPT GPTs or Claude Code
-subagent files. Runtime workloads consume the agent ID separately.
+Each adapter declares whether it manages a saved agent, deploys a cloud runtime,
+or exports a portable definition. The modules do not start sessions, run prompts,
+create scheduled runs, or manage ChatGPT GPTs or Claude Code subagent files.
+Applications consume remote IDs or definition templates according to the backend.
 
 ## Lifecycle and imports
 
@@ -169,13 +200,18 @@ terraform validate
 terraform test
 python tests/integration.py
 python tests/google_integration.py
+python tests/frontier_integration.py
 ```
 
-The Python tests use the real, locked providers with local HTTP contract fixtures
+The saved-agent and Google Python tests use the real, locked providers with local HTTP contract fixtures
 and fake keys. After initialization, they install providers from a local mirror
 and make no requests to vendor APIs. They exercise the CLI lifecycle, including
 errors, imports, empty values, drift, and credential isolation. There is no
 application UI, so browser UI testing is not applicable.
+
+The frontier CLI checks initialize against an empty provider mirror and apply
+every profile without vendor calls or credentials. They check saved plans,
+updates, cleared instructions, endpoint changes, no-op plans, and destroy.
 
 Live vendor-account verification has not been performed. The fixtures
 cannot establish account entitlements, model availability, service-side

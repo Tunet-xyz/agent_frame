@@ -13,3 +13,8 @@ output "backends" {
 output "reviewed_on" {
   value = local.catalog.reviewed_on
 }
+
+output "inference_profiles" {
+  description = "Reviewed inference endpoints for modules/inference. These export definitions and never create remote agents."
+  value       = jsondecode(file("${path.module}/../inference/profiles.json")).profiles
+}

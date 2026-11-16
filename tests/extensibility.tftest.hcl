@@ -7,6 +7,17 @@ run "capability_catalog" {
     condition     = !output.backends.grok.remote_lifecycle && output.backends.grok.module == "modules/grok" && output.backends.gemini.terraform_provider == "hashicorp/google" && output.backends.bedrock.module == null
     error_message = "The catalogue must distinguish portable definitions, implemented adapters, and external native-provider coverage."
   }
+  assert {
+    condition = length(output.inference_profiles) == 9 && alltrue([
+      for profile in keys(output.inference_profiles) : (
+        output.backends[profile].management == "definition" &&
+        !output.backends[profile].remote_lifecycle &&
+        output.backends[profile].terraform_provider == null &&
+        output.backends[profile].inference_profile == profile
+      )
+    ]) && output.backends.muse.module == "modules/muse"
+    error_message = "All reviewed inference profiles must be discoverable with an honest capability and the correct module/profile selector."
+  }
 }
 
 run "new_vendor_definition" {

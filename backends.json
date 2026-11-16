@@ -64,6 +64,96 @@
       "native_resource": "azapi_data_plane_resource",
       "notes": "Microsoft documents Microsoft.Foundry/agents@v1 using AzAPI >=2.9.0. No dedicated adapter in this repository.",
       "docs": "https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/deploy-hosted-agent-terraform"
+    },
+    "muse": {
+      "module": "modules/muse",
+      "inference_profile": "muse",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Meta Model API. Model access can be preview/account dependent. Spark Open and Glimmer require a separate hosting endpoint; image/audio-specific APIs are outside this profile.",
+      "docs": "https://dev.meta.ai/docs/protocols/responses"
+    },
+    "deepseek": {
+      "module": "modules/inference",
+      "inference_profile": "deepseek",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. OpenAI-compatible Chat Completions surface. Preserve native reasoning_content and tool-call history in the application.",
+      "docs": "https://api-docs.deepseek.com/"
+    },
+    "qwen": {
+      "module": "modules/inference",
+      "inference_profile": "qwen",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Supply the workspace- and region-specific Model Studio base URL in options.base_url; credentials and model availability must match that region. No default region is chosen.",
+      "docs": "https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope"
+    },
+    "kimi": {
+      "module": "modules/inference",
+      "inference_profile": "kimi",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. International Kimi API endpoint. Kimi Code subscriptions and regional endpoints can have different credentials and access.",
+      "docs": "https://platform.kimi.ai/docs/get-your-api-key"
+    },
+    "glm": {
+      "module": "modules/inference",
+      "inference_profile": "glm",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Standard Z.ai API endpoint, not the dedicated GLM Coding Plan endpoint. ZAI_API_KEY is this adapter's runtime environment convention.",
+      "docs": "https://docs.z.ai/guides/overview/quick-start"
+    },
+    "minimax": {
+      "module": "modules/inference",
+      "inference_profile": "minimax",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. OpenAI-compatible text surface. MINIMAX_API_KEY is this adapter's runtime environment convention; direct OpenAI SDK use must pass its value explicitly. Preserve reasoning_content on subsequent tool turns.",
+      "docs": "https://platform.minimax.io/docs/api-reference/text-openai-api"
+    },
+    "cohere": {
+      "module": "modules/inference",
+      "inference_profile": "cohere",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Cohere's compatibility API, not its native v2 Chat API. Supported settings and tools are limited by the compatibility surface.",
+      "docs": "https://docs.cohere.com/docs/compatibility-api"
+    },
+    "nvidia": {
+      "module": "modules/inference",
+      "inference_profile": "nvidia",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Hosted NVIDIA API Catalog endpoint. This does not deploy a self-hosted NIM or guarantee every model accepts tools or a system prompt.",
+      "docs": "https://docs.nvidia.com/openshell/latest/sandboxes/manage-providers"
+    },
+    "openrouter": {
+      "module": "modules/inference",
+      "inference_profile": "openrouter",
+      "management": "definition",
+      "remote_lifecycle": false,
+      "terraform_provider": null,
+      "native_resource": null,
+      "notes": "Portable definition and runtime request template; no inference execution or remote agent provisioning. Gateway inference, with author/model IDs supplied by the caller. The official OpenRouterTeam/openrouter Terraform provider manages platform administration, not saved agent definitions.",
+      "docs": "https://openrouter.ai/developers"
     }
   }
 }

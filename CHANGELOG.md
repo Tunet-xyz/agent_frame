@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.3.0
+
+- Add a Meta Muse entry point for Wonder, Spark and Ember definitions and
+  Responses request templates.
+- Add one provider-free inference module with reviewed DeepSeek, Qwen, Kimi,
+  GLM, MiniMax, Cohere, NVIDIA and OpenRouter profiles alongside Muse.
+- Support future compatible APIs, trusted gateways and existing self-hosted
+  models through custom Responses or Chat Completions profiles.
+- Require Qwen's workspace/region endpoint, preserve native tool formats and
+  instruction roles, and keep runtime credentials and input outside Terraform.
+- Expand the capability catalogue and examples. Preserve existing remote-agent
+  resource addresses and distinguish definitions from remote provisioning.
+- Add offline CLI coverage for saved plans, updates, endpoint fingerprints,
+  cleared instructions, no-op plans and destroy; keep Actions manual-only.
+
 ## v0.2.0
 
 - Add a provider-neutral, schema-versioned agent definition and capability

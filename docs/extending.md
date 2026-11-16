@@ -11,6 +11,10 @@ Use these building blocks:
 - `modules/definition` validates and exports a schema-versioned definition for
   any vendor identifier. Its remote `agent.id` is null. A content fingerprint
   is an artifact/deployment trigger, never a remote ID.
+- `modules/inference` adds reviewed Responses or Chat Completions runtime
+  templates to that definition. Select a named profile or a caller-reviewed
+  `custom_profile`. Adding a compatible vendor generally needs only a profile
+  record and tests. [Muse and frontier setup](frontier.md) describes the contract.
 - `modules/rest` manages a persistent JSON resource through the existing locked
   REST provider. A profile supplies its real path, HTTP methods, ID field,
   and response fields outside the managed payload. Its common version is null;
@@ -20,6 +24,11 @@ Use these building blocks:
 - `modules/catalog` exposes the reviewed [backend catalogue](../backends.json).
   A null module path means coverage exists in an external provider but this
   repository does not ship an adapter for it.
+
+The catalogue also exports `inference_profiles`, including endpoint, protocol,
+credential environment name, source and review notes. A definition profile has
+no Terraform provider dependency. An official provider for the platform's
+administration can be used separately where appropriate.
 
 Terraform provider dependencies are static. Add independent vendor entry points
 instead of adding every provider to the root selector and making users configure

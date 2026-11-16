@@ -1,4 +1,4 @@
-# Verification — v0.2.0, 16 November 2026
+# Verification — v0.3.0, 16 November 2026
 
 Verified locally on Windows with Terraform 1.15.7 and Python 3.13. The locked
 providers are Mastercard REST API 2.0.1, Modus Agendi Claude Managed Agents
@@ -9,11 +9,12 @@ amd64; execution was on Windows.
 | --- | --- |
 | `terraform fmt -check -recursive` | Passed |
 | `terraform validate` | Passed |
-| `terraform test` | 19 passed |
+| `terraform test` | 30 passed |
 | `python tests/integration.py` | 5 passed |
 | `python tests/google_integration.py` | 1 passed |
-| `python -m ruff check tests/integration.py tests/google_integration.py` | Passed |
-| Initialize and validate all six examples: both, openai, anthropic, grok, mistral, gemini | All passed |
+| `python tests/frontier_integration.py` | 2 passed |
+| Ruff check of all three Python integration scripts | Passed |
+| Initialize and validate all eight examples: both, openai, anthropic, grok, mistral, gemini, muse, frontier | All passed |
 | Local Markdown links and manual-only workflow configuration | Passed |
 
 The integration checks run the installed providers and actual Terraform CLI
@@ -30,6 +31,21 @@ runtime identity, imports, external deletion, drift, and non-authoritative label
 Grok's provider-free definition applies in the module suite without credentials
 or an inference request. Catalogue and new-vendor definition contracts are also
 covered.
+
+The frontier checks apply all nine reviewed inference profiles, the dedicated
+Muse entry point, and custom Chat Completions/Responses endpoints. They check
+native tool schemas and instruction roles, Qwen's required workspace endpoint,
+runtime-supplied input, and validation of unsupported profiles, credentials,
+conversation state and URL userinfo. Catalogue discovery distinguishes these
+definitions from remote resources.
+
+The new CLI suite initializes against an empty provider mirror without a direct
+registry fallback. It verifies saved-plan application, no resources in plan or
+state, exclusion of unused fake environment credentials, endpoint changes without
+a definition fingerprint change, runtime fingerprints, cleared instructions,
+model updates, no-op plans and destroy. It makes no inference requests. Source
+links and local catalogue paths were checked; the manual-only workflow includes
+the new suite and was not dispatched.
 
 Fixtures use fake keys, inherit no vendor credentials, and use a local provider
 mirror after initialization. No live vendor agents were created or modified.
@@ -52,3 +68,9 @@ against the documented server default. Both cases are covered by the completed
 checks. Python lint, catalogue paths, documentation links, ADK method data, and
 the manual-only workflow check pass. No live vendor account or GitHub Actions
 workflow was used.
+
+The v0.3.0 extension adds Meta Muse, DeepSeek, Qwen, Kimi, GLM, MiniMax, Cohere,
+NVIDIA and OpenRouter definitions without adding provider dependencies to existing
+entry points. Model IDs remain caller-selected. Meta-hosted Muse uses Responses;
+existing self-hosted Muse Spark Open/Glimmer servers can use a compatible custom
+profile. Those paths configure application artifacts, not cloud deployments.
