@@ -1,0 +1,18 @@
+# An allowlist prevents local state, credentials and caches entering the build.
+**
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!README.md
+!backends.json
+!src/
+!src/tunet_agents_mcp/
+!src/tunet_agents_mcp/*.py
+!modules/
+!modules/definition/
+!modules/definition/*.tf
+!modules/inference/
+!modules/inference/*.tf
+!modules/inference/profiles.json
+!modules/grok/
+!modules/grok/*.tf

@@ -47,6 +47,17 @@ Use Python 3.11+ and Terraform on `PATH` for definition compilation. The server
 generates configuration and templates without vendor credentials or deployments.
 See [MCP setup, client configuration and tools](docs/mcp.md).
 
+Prebuilt Linux containers bundle Python and Terraform. Install the image for
+your Docker engine with `./tools/install-container.ps1` on Windows or
+`sh tools/install-container.sh` on Linux/macOS, then launch it from your MCP
+client. See [container downloads and client setup](docs/distribution.md).
+No host Python, uv or Terraform is needed for that distribution.
+
+The current Terraform implementation is a module. See the
+[Registry publishing route and remaining account/visibility choices](docs/registry-publishing.md)
+for the requirements to list it; no provider plugin or Registry account is
+claimed by this release.
+
 ## Usage
 
 Terraform 1.10 or later is required. See [examples/both](examples/both/main.tf)
@@ -55,7 +66,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.4.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.5.0"
   providers = {
     restapi = restapi
     claude  = claude
@@ -77,13 +88,13 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.4.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.4.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `//modules/mistral?ref=v0.4.0` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Gemini runtime | `//modules/gemini?ref=v0.4.0` | [gemini](examples/gemini/main.tf) | `google` |
-| Grok definition | `//modules/grok?ref=v0.4.0` | [grok](examples/grok/main.tf) | none |
-| Muse definition | `//modules/muse?ref=v0.4.0` | [muse](examples/muse/main.tf) | none |
-| Frontier definitions | `//modules/inference?ref=v0.4.0` | [frontier](examples/frontier/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.5.0` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.5.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.5.0` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.5.0` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.5.0` | [grok](examples/grok/main.tf) | none |
+| Muse definition | `//modules/muse?ref=v0.5.0` | [muse](examples/muse/main.tf) | none |
+| Frontier definitions | `//modules/inference?ref=v0.5.0` | [frontier](examples/frontier/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -98,7 +109,7 @@ For example, Muse uses the same common inputs without a provider declaration:
 
 ```hcl
 module "muse" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.4.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.5.0"
 
   name         = "Review assistant"
   model        = var.muse_model

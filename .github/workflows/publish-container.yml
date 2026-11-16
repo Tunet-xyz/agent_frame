@@ -1,0 +1,50 @@
+name: Publish MCP container
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Existing release tag version, without v
+        type: string
+        required: true
+        default: 0.5.0
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: v${{ inputs.version }}
+      - name: Check release version
+        id: release
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$(python3 -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" = "$RELEASE_VERSION"
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@v4.4.0
+      - uses: docker/setup-buildx-action@v4.4.1
+      - run: python3 -m pip install uv==0.6.14
+      - run: uv sync --frozen
+      - name: Build and exercise both architectures
+        run: uv run --frozen python tools/package_containers.py --no-archive
+      - uses: docker/login-action@v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/tunet-xyz/terraform-agents-mcp:${{ inputs.version }}
+          build-args: |
+            PACKAGE_VERSION=${{ inputs.version }}
+            VCS_REF=${{ steps.release.outputs.revision }}

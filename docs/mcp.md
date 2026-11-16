@@ -3,7 +3,7 @@
 The companion `tunet-agents-mcp` server makes the shared agent catalogue and
 Terraform definitions available to MCP clients. It uses the
 [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk),
-pinned to 2.3.0, and communicates over local stdio. The package version is 0.4.0.
+pinned to 2.3.0, and communicates over local stdio. The package version is 0.5.0.
 
 ## Install and launch
 
@@ -129,7 +129,7 @@ Call `render_terraform_configuration` with the same `spec` shape, for example
 `backend = "openai"`, `"anthropic"`, `"mistral"` or `"gemini"`. It returns a
 `configuration_json` string, the suggested filename, credential setup notes and
 the remote-lifecycle capability. Module sources are pinned to this release's
-`v0.4.0` tag.
+`v0.5.0` tag.
 
 OpenAI and Mistral configurations declare the locked REST provider and an
 ephemeral, sensitive `api_key` input; supply `TF_VAR_api_key` separately when

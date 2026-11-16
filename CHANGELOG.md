@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.5.0
+
+- Add digest-pinned Linux amd64/arm64 MCP images with Python, frozen dependencies,
+  Terraform and whitelisted module assets, running as a non-root user.
+- Exercise every inference backend over real stdio with networking disabled,
+  a read-only root and bounded temporary storage.
+- Add verified image archives, SHA-256 manifests and PowerShell/shell installers
+  for private GitHub Release distribution without host Python or Terraform.
+- Add a user-started, manual-only multi-platform GHCR publishing workflow.
+- Document Terraform Registry module/provider requirements and the remaining
+  public-source or HCP account choices. No repository is made public or renamed.
+
 ## v0.4.0
 
 - Add a local stdio MCP server using the official Python SDK, with four tools

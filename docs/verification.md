@@ -1,9 +1,11 @@
-# Verification — v0.4.0, 16 November 2026
+# Verification — v0.5.0, 16 November 2026
 
 Verified locally on Windows with Terraform 1.15.7 and Python 3.13. The locked
 providers are Mastercard REST API 2.0.1, Modus Agendi Claude Managed Agents
 1.1.0, and the official Google provider 8.11.0. Signed checksums were verified and recorded for Windows amd64 and Linux
-amd64; execution was on Windows.
+amd64. Provider lifecycle fixtures ran on Windows. Container checks additionally
+ran on Linux amd64 in the Docker VM and Linux arm64 under emulation, with Python
+3.13.18 and Terraform 1.15.7 bundled into the images.
 
 | Check | Result |
 | --- | --- |
@@ -13,11 +15,15 @@ amd64; execution was on Windows.
 | `python tests/integration.py` | 5 passed |
 | `python tests/google_integration.py` | 1 passed |
 | `python tests/frontier_integration.py` | 2 passed |
-| MCP integration suite over real stdio | 8 passed from source and installed wheel |
+| MCP integration suite over real stdio | 8 passed; packaged image also exercised separately |
+| Linux amd64 container runtime and offline stdio | 2 passed |
+| Linux arm64 container runtime and offline stdio, under emulation | 2 passed |
+| PowerShell and Linux shell installers against real image archives | Passed |
+| Both installers reject corrupted downloads before loading, including CRLF manifests | Passed |
 | Validate MCP-generated Terraform configurations for all 14 implemented backends | Passed |
 | Wheel build and inspection | Passed; exactly 8 whitelisted source data assets |
 | Frozen dependency lock check | Passed |
-| Ruff check of the Python package and all four integration scripts | Passed |
+| Ruff check of the package, integration suites and packaging tool | Passed |
 | Eight unchanged Terraform examples | Previously verified in v0.3.0 |
 | Local Markdown links and manual-only workflow configuration | Passed |
 
@@ -65,6 +71,26 @@ the official MCP Python SDK 2.3.0; its uv lock resolves 31 packages, including
 the project. Wheel contents exclude state, variable files, caches and credentials.
 Initial testing found missing structured output schemas and an AnyIO test-client
 cleanup issue; both were fixed before the successful runs.
+
+Both architecture images run as UID/GID 10001, include Terraform and its upstream
+license, and contain exactly the eight expected source assets. The container
+suite uses a read-only root, no network, dropped capabilities and a 64 MB
+temporary filesystem. It compiles all ten named inference backends and a custom
+endpoint, checks literal instructions and error recovery, and renders a remote
+OpenAI configuration without applying it. No host source or credentials are
+mounted into the MCP server.
+
+The PowerShell installer was exercised in PowerShell 7 and Windows PowerShell;
+the shell installer ran in an ephemeral official Linux Docker CLI helper against
+the same local engine. Both loaded the verified archive and created the expected
+client alias. Corrupt downloads were rejected before loading. Those checks found
+and fixed a Windows PowerShell module dependency and CRLF manifest handling.
+
+Image bases are digest-pinned and the build context is an allowlist. The optional
+GHCR publishing workflow is manual-only and was not started. Terraform Registry
+requirements were checked against HashiCorp documentation; module publication
+and account connection remain pending the owner's visibility/registry choice.
+No public repository, custom provider registration or HCP organization was created.
 
 Fixtures use fake keys, inherit no vendor credentials, and use a local provider
 mirror after initialization. No live vendor agents were created or modified.

@@ -14,6 +14,9 @@ and user Terraform workspaces; do not duplicate the Terraform compiler in Python
 - For the MCP package, run `uv sync --frozen`,
   `uv run --frozen python tests/mcp_integration.py`, and `uv build --wheel`.
   Test real stdio connections and the built package's bundled Terraform assets.
+- For container changes, run `uv run --frozen python tools/package_containers.py
+  --no-archive` with a Linux Docker engine. Both architecture images must pass
+  the real stdio tests without network access before release downloads are built.
 - The integration tests must use local mock APIs and fake keys. Real vendor
   verification is a separate, explicitly identified check.
 - No application UI is shipped; exercise the Terraform CLI flow with real

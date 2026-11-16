@@ -26,3 +26,4 @@ jobs:
       - run: uv sync --frozen
       - run: uv run --frozen python tests/mcp_integration.py
       - run: uv build --wheel
+      - run: uv run --frozen python tools/package_containers.py --architectures amd64 --no-archive
