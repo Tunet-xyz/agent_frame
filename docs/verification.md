@@ -31,3 +31,14 @@ UI testing is not applicable: this repository ships a Terraform module and CLI
 examples, with no browser or application UI. The affected CLI flows were tested
 with real providers. GitHub Actions was not run; its only trigger is
 `workflow_dispatch`, which an agent must never invoke.
+
+## Extensible backends iteration
+
+The extension adds portable definitions, a Grok Responses template, a reusable
+REST profile, a Mistral adapter, and a capability catalogue. All 15 module checks
+pass. The existing four lifecycle checks passed in regression; the new Mistral
+lifecycle passed after its handle was made independent of the REST provider's
+stale computed version output. The Grok and Mistral examples initialize and
+validate. Python lint, catalogue paths, documentation links, and the manual-only
+workflow check pass. No application UI is affected and no live vendor account
+or GitHub Actions workflow was used.

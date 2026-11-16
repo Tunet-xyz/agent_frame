@@ -1,12 +1,20 @@
 # Terraform agents
 
-Manage reusable OpenAI and Claude agents with common Terraform inputs and one
-output shape. This private Tunet module reuses existing providers:
+Manage agents across vendors with common Terraform inputs and one output shape.
+Each backend declares whether it provisions a remote resource or exports a
+portable definition. This private Tunet module reuses existing providers:
 
 | Platform | Implementation | Verified dependency |
 | --- | --- | --- |
 | OpenAI | Agents API through `Mastercard/restapi` | 2.0.1 |
 | Claude | `modus-agendi/anthropic-claude-managed-agents` | 1.1.0 |
+| Mistral | Beta Agents API through `Mastercard/restapi` | 2.0.1 |
+| Grok | Portable definition and Responses request template; no saved-agent CRUD found | No provider or Terraform credential |
+
+Additional backends use independent entry points with the same core interface.
+See [the extension contract and cloud-provider review](docs/extending.md) and
+the machine-readable [capability catalogue](backends.json). The original root
+selector remains compatible with OpenAI/Claude deployments.
 
 OpenAI has an [official Terraform provider](https://developers.openai.com/api/docs/guides/terraform),
 but its current resource catalogue covers administration and webhooks rather than
@@ -47,10 +55,17 @@ using only one platform, use the vendor entry point. They share the same
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
 | OpenAI only | `//modules/openai?ref=v0.1.0` | [openai](examples/openai/main.tf) | `restapi` |
 | Claude only | `//modules/anthropic?ref=v0.1.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `modules/mistral` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Grok definition | `modules/grok` | [grok](examples/grok/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
 one on the selected platform; it does not transfer sessions or history.
+
+`modules/definition` accepts any vendor identifier, so a new vendor's portable
+configuration needs no root-selector edit. `modules/rest` supplies a reusable
+CRUD profile for vendors with a documented persistent REST agent API. Model
+inference compatibility alone is insufficient to use a saved-agent profile.
 
 ## Credentials
 
@@ -65,6 +80,10 @@ The Claude provider reads `ANTHROPIC_API_KEY`. Use a workspace-scoped key with
 Managed Agents access. This provider's configuration does not expose an explicit
 workspace selector; identity-linked keys needing that header are outside this
 module's verified scope. The provider supplies the Managed Agents beta header.
+
+The Mistral example takes its key through the ephemeral `TF_VAR_api_key` input.
+Grok's definition requires no Terraform key; the consuming application reads
+`XAI_API_KEY` and supplies user input when making a runtime request.
 
 Inject credentials into the environment from your normal secret store. Use
 non-interactive Git authentication to download this private module. No keys,
@@ -150,7 +169,7 @@ and make no requests to vendor APIs. They exercise the CLI lifecycle, including
 errors, imports, empty values, drift, and credential isolation. There is no
 application UI, so browser UI testing is not applicable.
 
-Live OpenAI/Claude account verification has not been performed. The fixtures
+Live vendor-account verification has not been performed. The fixtures
 cannot establish account entitlements, model availability, service-side
 validation of every nested tool shape, or beta API compatibility in your account.
 The checked-in workflow is manual-only and agents must not start it.

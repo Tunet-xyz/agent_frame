@@ -19,6 +19,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 TIMESTAMP = "2026-11-16T10:00:00Z"
+FIXTURE_SECRETS = ("fixture-openai", "fixture-anthropic", "fixture-mistral")
 
 
 class AgentAPI(ThreadingHTTPServer):
@@ -54,6 +55,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(400, {"error": {"message": "missing OpenAI beta header"}})
                 return None
             vendor = "openai"
+        elif self.headers.get("Authorization") == "Bearer fixture-mistral":
+            if self.headers.get("OpenAI-Beta"):
+                self.reply(400, {"error": {"message": "OpenAI headers sent to Mistral"}})
+                return None
+            vendor = "mistral"
         elif self.headers.get("x-api-key") == "fixture-anthropic":
             if "managed-agents-2026-04-01" not in self.headers.get("anthropic-beta", ""):
                 self.reply(400, {"type": "error", "error": {"type": "invalid_request_error", "message": "missing Claude beta header"}})
@@ -97,6 +103,9 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         creating = path == "/v1/agents"
+        if vendor == "mistral" and self.command != ("POST" if creating else "PATCH"):
+            self.reply(405, {"error": {"message": "Mistral requires PATCH for updates"}})
+            return
         if creating:
             agent_id = f"agent_{vendor}_{self.server.next_id}"
             self.server.next_id += 1
@@ -105,6 +114,13 @@ class Handler(BaseHTTPRequestHandler):
                         "updated_at": 1794823200, "async": False, "time_awareness": True,
                         "multi_agent": {}, "text": {"format": {"type": "text"}},
                         "compaction": None, "experimental": None}
+            elif vendor == "mistral":
+                body = {
+                    "id": agent_id, "object": "agent", "version": 0, "versions": [],
+                    "created_at": TIMESTAMP, "updated_at": TIMESTAMP,
+                    "owner_id": "fixture-owner", "source": "api", "deployment_chat": False,
+                    "completion_args": {"temperature": 0.7}, "guardrails": None, "handoffs": None,
+                }
             else:
                 body = {
                     "id": agent_id, "type": "agent", "version": 0,
@@ -122,14 +138,18 @@ class Handler(BaseHTTPRequestHandler):
                 return
             body = self.server.agents[agent_id]["body"]
 
-        if vendor == "openai":
-            allowed = {"name", "model", "instructions", "metadata", "tools", "reasoning", "service_tier"}
+        if vendor in ("openai", "mistral"):
+            allowed = {"name", "model", "instructions", "metadata", "tools"}
+            allowed |= {"reasoning", "service_tier"} if vendor == "openai" else {"description"}
             if set(data) - allowed:
                 self.reply(400, {"error": {"message": "unknown agent field: " + ",".join(sorted(set(data) - allowed))}})
                 return
             body.update(data)
-            if body.get("reasoning") is None:
+            if vendor == "openai" and body.get("reasoning") is None:
                 body["reasoning"] = {"effort": None}
+            if vendor == "mistral":
+                body["version"] += 1
+                body["versions"].append(body["version"])
         else:
             if not creating and data.get("version", body["version"]) != body["version"]:
                 self.reply(409, {"type": "error", "error": {"type": "conflict_error", "message": "stale agent version"}})
@@ -154,15 +174,22 @@ class Handler(BaseHTTPRequestHandler):
             body["version"] += 1
         self.reply(200, body)
 
+    def do_PATCH(self):
+        self.do_POST()
+
     def do_DELETE(self):
         vendor = self.authenticate()
         if vendor is None:
             return
-        if vendor != "openai":
+        if vendor not in ("openai", "mistral"):
             self.reply(405, {"error": {"message": "Claude archives agents"}})
             return
         agent_id = urlsplit(self.path).path.rsplit("/", 1)[-1]
         self.server.agents.pop(agent_id, None)
+        if vendor == "mistral":
+            self.send_response(204)
+            self.end_headers()
+            return
         self.reply(200, {"id": agent_id, "object": "agent.deleted", "deleted": True})
 
 
@@ -173,7 +200,7 @@ class Terraform:
         self.vendor = vendor
         self.env = {
             key: value for key, value in os.environ.items()
-            if not key.startswith(("OPENAI_", "ANTHROPIC_", "REST_API_", "TF_VAR_", "TF_LOG", "TF_CLI_ARGS", "TF_PLUGIN_CACHE"))
+            if not key.startswith(("OPENAI_", "ANTHROPIC_", "MISTRAL_", "XAI_", "GROK_", "REST_API_", "TF_VAR_", "TF_LOG", "TF_CLI_ARGS", "TF_PLUGIN_CACHE"))
         }
         self.env.update({"TF_INPUT": "0", "TF_IN_AUTOMATION": "1", "CHECKPOINT_DISABLE": "1"})
         if vendor == "anthropic" or not direct:
@@ -214,9 +241,9 @@ class Terraform:
             }},
             "output": {"agent": {"value": "${module.agent.agent}"}},
         }
-        self.env["TF_VAR_openai_api_key"] = "fixture-openai"
+        self.env["TF_VAR_openai_api_key"] = "fixture-mistral" if vendor == "mistral" else "fixture-openai"
         if direct:
-            selected = "restapi" if vendor == "openai" else "claude"
+            selected = "claude" if vendor == "anthropic" else "restapi"
             config["terraform"]["required_providers"] = {selected: config["terraform"]["required_providers"][selected]}
             config["provider"] = {selected: config["provider"][selected]}
             module = config["module"]["agent"]
@@ -224,21 +251,22 @@ class Terraform:
             module.pop("vendor")
             module["providers"] = {selected: selected}
             module.pop("openai")
-            if vendor == "openai":
+            if vendor in ("openai", "mistral"):
                 module["options"] = {"tools_json": "${var.tools_json}"}
+                if vendor == "mistral":
+                    config["provider"]["restapi"]["headers"].pop("OpenAI-Beta")
             else:
                 config["variable"].pop("openai_api_key")
                 self.env.pop("TF_VAR_openai_api_key")
         (self.folder / "main.tf.json").write_text(json.dumps(config), encoding="utf-8")
         lock = (ROOT / ".terraform.lock.hcl").read_text(encoding="utf-8")
-        if direct:
-            sources = {item["source"].lower() for item in config["terraform"]["required_providers"].values()}
-            lock = "\n\n".join(
-                match.group(0) for match in re.finditer(r'provider "registry\.terraform\.io/([^\"]+)" \{.*?^\}', lock, flags=re.DOTALL | re.MULTILINE)
-                if match.group(1).lower() in sources
-            ) + "\n"
-            if not lock.strip():
-                raise AssertionError("The repository lock file is missing the selected provider.")
+        sources = {item["source"].lower() for item in config["terraform"]["required_providers"].values()}
+        lock = "\n\n".join(
+            match.group(0) for match in re.finditer(r'provider "registry\.terraform\.io/([^\"]+)" \{.*?^\}', lock, flags=re.DOTALL | re.MULTILINE)
+            if match.group(1).lower() in sources
+        ) + "\n"
+        if not lock.strip():
+            raise AssertionError("The repository lock file is missing the selected provider.")
         (self.folder / ".terraform.lock.hcl").write_text(lock, encoding="utf-8")
         self.run("init", "-backend=false", "-lockfile=readonly")
 
@@ -249,7 +277,7 @@ class Terraform:
             command.pop()
         result = subprocess.run(command, cwd=self.folder, env=self.env,
                                 capture_output=True, text=True, encoding="utf-8", timeout=120, check=False)
-        if any(secret in result.stdout + result.stderr for secret in ("fixture-openai", "fixture-anthropic")):
+        if any(secret in result.stdout + result.stderr for secret in FIXTURE_SECRETS):
             raise AssertionError("A provider exposed a fixture credential in CLI output.")
         if result.returncode not in codes:
             raise AssertionError(f"{' '.join(command)} failed ({result.returncode}):\n{result.stdout}\n{result.stderr}")
@@ -287,12 +315,13 @@ class LifecycleTests(unittest.TestCase):
         self.temp.cleanup()
 
     def lifecycle(self, vendor):
-        terraform = Terraform(self.temp.name, self.server, vendor)
+        terraform = Terraform(self.temp.name, self.server, vendor, direct=vendor == "mistral")
         terraform.plan(changed=True)
         terraform.run("plan", "-input=false", "-out=saved.tfplan")
         saved = terraform.run("show", "-json", "saved.tfplan").stdout
         self.assertNotIn("fixture-openai", saved)
         self.assertNotIn("fixture-anthropic", saved)
+        self.assertNotIn("fixture-mistral", saved)
         self.server.deny_next_write = True
         failure = terraform.run("apply", "-auto-approve", "-input=false", codes=(1,))
         self.assertIn("403", failure.stdout + failure.stderr)
@@ -306,6 +335,7 @@ class LifecycleTests(unittest.TestCase):
         state = (terraform.folder / "terraform.tfstate").read_text(encoding="utf-8")
         self.assertNotIn("fixture-openai", state)
         self.assertNotIn("fixture-anthropic", state)
+        self.assertNotIn("fixture-mistral", state)
 
         # Removing a metadata key must clear it remotely. Both APIs are tested:
         # OpenAI replaces metadata; Claude merges keys and needs explicit nulls.
@@ -315,7 +345,7 @@ class LifecycleTests(unittest.TestCase):
         body = self.server.agents[agent_id]["body"]
         self.assertEqual(body["name"], "Updated agent")
         self.assertEqual(body["metadata"], {"team": "updated"})
-        self.assertEqual(body["instructions" if vendor == "openai" else "system"], "" if vendor == "openai" else None)
+        self.assertEqual(body["system" if vendor == "anthropic" else "instructions"], None if vendor == "anthropic" else "")
         terraform.plan(changed=False)
 
         # Refresh must notice out-of-band edits and the next apply must repair them.
@@ -330,8 +360,13 @@ class LifecycleTests(unittest.TestCase):
         terraform.plan(changed=False)
 
         # Import must adopt the same agent and settle to a no-op after reconciliation.
-        address = "module.agent.module.openai[0].restapi_object.this" if vendor == "openai" else "module.agent.module.anthropic[0].claude-managed-agents_agent.this"
-        identifier = "/agents/" + agent_id if vendor == "openai" else agent_id
+        addresses = {
+            "openai": "module.agent.module.openai[0].restapi_object.this",
+            "anthropic": "module.agent.module.anthropic[0].claude-managed-agents_agent.this",
+            "mistral": "module.agent.module.backend.restapi_object.this",
+        }
+        address = addresses[vendor]
+        identifier = agent_id if vendor == "anthropic" else "/agents/" + agent_id
         terraform.run("state", "rm", address)
         terraform.run("import", "-input=false", address, identifier)
         imported = terraform.apply()
@@ -346,7 +381,7 @@ class LifecycleTests(unittest.TestCase):
         terraform.plan(changed=False)
 
         # Empty metadata must also clear Claude's patch-based metadata bag.
-        if vendor == "openai":
+        if vendor != "anthropic":
             self.server.agents.pop(agent_id)
             terraform.plan(changed=True)
             new_id = terraform.apply()["id"]
@@ -360,7 +395,7 @@ class LifecycleTests(unittest.TestCase):
             new_id = agent_id
         terraform.plan(changed=False)
         terraform.run("destroy", "-auto-approve", "-input=false")
-        if vendor == "openai":
+        if vendor != "anthropic":
             self.assertNotIn(new_id, self.server.agents)
             self.assertIn((vendor, "DELETE", "/v1/agents/" + new_id), self.server.events)
         else:
@@ -374,6 +409,10 @@ class LifecycleTests(unittest.TestCase):
 
     def test_claude_lifecycle(self):
         self.lifecycle("anthropic")
+
+    def test_mistral_lifecycle(self):
+        self.lifecycle("mistral")
+        self.assertTrue(any(event[1] == "PATCH" for event in self.server.events))
 
     def test_openai_entrypoint_needs_no_claude_credentials(self):
         terraform = Terraform(self.temp.name, self.server, "openai", direct=True)
