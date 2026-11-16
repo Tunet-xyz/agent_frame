@@ -5,7 +5,7 @@ variable "vendor" {
 
   validation {
     condition     = contains(["openai", "anthropic"], var.vendor)
-    error_message = "vendor must be openai or anthropic."
+    error_message = "The compatibility root selector accepts openai or anthropic. Use a per-vendor entry point from the backend catalogue for other platforms."
   }
 }
 

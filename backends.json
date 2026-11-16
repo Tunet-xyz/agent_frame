@@ -39,12 +39,12 @@
       "docs": "https://docs.mistral.ai/api/endpoint/beta/agents"
     },
     "gemini": {
-      "module": null,
+      "module": "modules/gemini",
       "management": "cloud_runtime",
       "remote_lifecycle": true,
       "terraform_provider": "hashicorp/google",
       "native_resource": "google_vertex_ai_reasoning_engine",
-      "notes": "Official Google provider covers the Google Cloud agent runtime, not every standalone Gemini developer-API agent feature.",
+      "notes": "Native ADK config deployment through the official Google provider; requires an existing project and runtime identity. This is Google Cloud runtime coverage, not every standalone Gemini developer-API agent feature.",
       "docs": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale/runtime/use-terraform"
     },
     "bedrock": {

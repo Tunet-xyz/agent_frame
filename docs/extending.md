@@ -55,6 +55,8 @@ they are not persistent agent definitions.
 The consuming application supplies `input`, continuation state, and
 `XAI_API_KEY` at runtime. Terraform does not submit prompts or generate billable
 responses. `agent.id` is null and `capabilities.remote_lifecycle` is false.
+The template is for an initial request: when continuing through
+`previous_response_id`, omit `instructions` as required by the xAI API.
 See [the example](../examples/grok/main.tf),
 [Responses reference](https://docs.x.ai/developers/rest-api-reference/inference/responses),
 and [management reference](https://docs.x.ai/developers/rest-api-reference/management).
@@ -80,6 +82,10 @@ Google documents Terraform deployment through the official provider's
 `google_vertex_ai_reasoning_engine`. This verifies the Google Cloud runtime path
 for Gemini-backed agents; it does not mean every Gemini Developer API feature is
 managed by that resource. See [Google's deployment guide](https://docs.cloud.google.com/gemini-enterprise-agent-platform/scale/runtime/use-terraform).
+
+The repository's [Gemini adapter](../modules/gemini/main.tf) deploys a native ADK
+configuration with that resource, isolated from other vendors' credentials.
+See [setup, input mapping, and verified provider constraints](gemini.md).
 
 AWS's official provider has
 [`aws_bedrockagent_agent`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/bedrockagent_agent).

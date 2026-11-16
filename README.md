@@ -9,6 +9,7 @@ portable definition. This private Tunet module reuses existing providers:
 | OpenAI | Agents API through `Mastercard/restapi` | 2.0.1 |
 | Claude | `modus-agendi/anthropic-claude-managed-agents` | 1.1.0 |
 | Mistral | Beta Agents API through `Mastercard/restapi` | 2.0.1 |
+| Gemini on Google Cloud | Native ADK config through `hashicorp/google` | 8.11.0 |
 | Grok | Portable definition and Responses request template; no saved-agent CRUD found | No provider or Terraform credential |
 
 Additional backends use independent entry points with the same core interface.
@@ -31,7 +32,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.1.0"
+  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.2.0"
   providers = {
     restapi = restapi
     claude  = claude
@@ -53,10 +54,11 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.1.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.1.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `modules/mistral` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Grok definition | `modules/grok` | [grok](examples/grok/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.2.0` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.2.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.2.0` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.2.0` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.2.0` | [grok](examples/grok/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -84,6 +86,11 @@ module's verified scope. The provider supplies the Managed Agents beta header.
 The Mistral example takes its key through the ephemeral `TF_VAR_api_key` input.
 Grok's definition requires no Terraform key; the consuming application reads
 `XAI_API_KEY` and supplies user input when making a runtime request.
+
+Gemini uses the Google provider's existing ADC or workload identity. The adapter
+takes a project, region, and existing runtime service account. Its model and
+instructions configure a real ADK deployment. See [Gemini setup and provider
+limits](docs/gemini.md) before applying it.
 
 Inject credentials into the environment from your normal secret store. Use
 non-interactive Git authentication to download this private module. No keys,
@@ -161,6 +168,7 @@ terraform fmt -check -recursive
 terraform validate
 terraform test
 python tests/integration.py
+python tests/google_integration.py
 ```
 
 The Python tests use the real, locked providers with local HTTP contract fixtures
