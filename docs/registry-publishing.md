@@ -45,6 +45,18 @@ in `agent_frame` first, then a reviewed and tested export receives the matching
 semantic version tag. No Python package, Docker image, provider binary, local
 state, credentials or GitHub Actions workflow is included in the export.
 
+Maintainers can create a fresh export with:
+
+```sh
+python tools/export_registry.py --ref v0.6.1 --destination /new/registry-release
+```
+
+The command reads the immutable tag, preserves Git blob line endings, writes
+the provenance manifest and refuses to overwrite an existing destination.
+Run the exported Terraform and CLI suites before committing and tagging the
+Registry repository. Keep its existing history when importing later exports;
+never replace its branch history or move an existing version tag.
+
 ## Complete the initial listing
 
 1. Open Upload on the [Terraform Registry](https://registry.terraform.io/).
