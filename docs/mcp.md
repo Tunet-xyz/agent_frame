@@ -1,9 +1,9 @@
-# MCP server
+# AgentFrame MCP server
 
-The companion `tunet-agents-mcp` server makes the shared agent catalogue and
+The AgentFrame `agent-frame-mcp` server makes the shared agent catalogue and
 Terraform definitions available to MCP clients. It uses the
 [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk),
-pinned to 2.3.0, and communicates over local stdio. The package version is 0.5.0.
+pinned to 2.3.0, and communicates over local stdio. The package version is 0.6.0.
 
 ## Install and launch
 
@@ -11,7 +11,7 @@ Use Python 3.11 or newer. From the checked-out private repository:
 
 ```shell
 uv sync --frozen
-uv run --frozen tunet-agents-mcp
+uv run --frozen agent-frame-mcp
 ```
 
 The server waits for an MCP client on stdin; silence on startup is expected.
@@ -36,15 +36,15 @@ environment's **absolute** Python executable. For clients using `mcpServers`:
 ```json
 {
   "mcpServers": {
-    "tunet-agents": {
-      "command": "/absolute/path/to/terraform-agents/.venv/bin/python",
-      "args": ["-m", "tunet_agents_mcp"]
+    "agent-frame": {
+      "command": "/absolute/path/to/agent_frame/.venv/bin/python",
+      "args": ["-m", "agent_frame"]
     }
   }
 }
 ```
 
-On Windows, use `C:/path/to/terraform-agents/.venv/Scripts/python.exe` instead.
+On Windows, use `C:/path/to/agent_frame/.venv/Scripts/python.exe` instead.
 The launch command works from another working directory, including paths with
 spaces. Ensure the client's environment can find Terraform when using the
 compiler. See the [SDK's stdio host guide](https://py.sdk.modelcontextprotocol.io/get-started/real-host/)
@@ -69,8 +69,11 @@ this repository has no dedicated adapter for those entries.
 
 Two JSON resources expose the same underlying data:
 
-- `terraform-agents://catalog`
-- `terraform-agents://inference-profiles`
+- `agent-frame://catalog`
+- `agent-frame://inference-profiles`
+
+The previous command, Python namespace and resource URIs remain available as
+deprecated compatibility aliases in this release. See [the migration guide](migration.md).
 
 ## Build a definition
 
@@ -129,7 +132,7 @@ Call `render_terraform_configuration` with the same `spec` shape, for example
 `backend = "openai"`, `"anthropic"`, `"mistral"` or `"gemini"`. It returns a
 `configuration_json` string, the suggested filename, credential setup notes and
 the remote-lifecycle capability. Module sources are pinned to this release's
-`v0.5.0` tag.
+`v0.6.0` tag.
 
 OpenAI and Mistral configurations declare the locked REST provider and an
 ephemeral, sensitive `api_key` input; supply `TF_VAR_api_key` separately when

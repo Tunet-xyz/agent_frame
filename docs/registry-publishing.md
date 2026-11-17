@@ -1,6 +1,6 @@
 # Terraform Registry publishing route
 
-Reviewed on 16 November 2026. This repository is a **Terraform module** reusing
+Reviewed on 17 November 2026. AgentFrame is a **Terraform module** reusing
 existing providers, plus an MCP server. It has no Terraform provider plugin.
 The appropriate listing for the current implementation is a module listing.
 
@@ -25,13 +25,13 @@ Current status:
 | Reusable module with root and independent submodules | Present |
 | README, examples, declared inputs/outputs and provider dependencies | Present |
 | Version tags | Present |
-| Public repository | Not met: `Tunet-xyz/terraform-agents` is private |
-| Eligible three-part repository name | Not met: `terraform-agents` has two parts |
+| Public repository | Not met: `Tunet-xyz/agent_frame` is private |
+| Eligible three-part repository name | Not met: `agent_frame` does not use `terraform-PROVIDER-NAME` |
 | Registry GitHub OAuth connection | Not available in this agent session |
 
-A possible public source would be `Tunet-xyz/terraform-restapi-agents`, with
+A possible public source would be `Tunet-xyz/terraform-restapi-agent-frame`, with
 `restapi` identifying the root's main provider and a module address of
-`Tunet-xyz/agents/restapi`. The module can still include the other provider
+`Tunet-xyz/agent-frame/restapi`. The module can still include the other provider
 adapters. This name is a proposal, not a reserved or published Registry address.
 
 Before publishing, the owner must choose whether the module source should be
@@ -39,7 +39,8 @@ public and choose its license. A dedicated public export can preserve the
 existing private repository and its Git URLs, but its documentation and MCP
 generated module sources must be updated to point to the public source. The
 final public source must be reviewed and tested before Registry publication.
-No repository has been renamed, copied publicly or made public by this release.
+The existing repository was renamed to `agent_frame` with its private visibility
+and release history preserved. No separate public repository has been created.
 
 After those choices, use Upload on the [Terraform Registry](https://registry.terraform.io/)
 to connect the owner's GitHub identity, authorize Tunet-xyz access where needed,

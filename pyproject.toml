@@ -3,30 +3,38 @@ requires = ["hatchling==1.32.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tunet-agents-mcp"
-version = "0.5.0"
-description = "MCP interface to the Tunet Terraform agent catalogue and definition modules"
+name = "AgentFrame"
+version = "0.6.0"
+description = "AgentFrame: reusable AI agent definitions, Terraform modules and an MCP interface"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = ["Private :: Do Not Upload"]
 dependencies = ["mcp==2.3.0"]
 
 [project.scripts]
-tunet-agents-mcp = "tunet_agents_mcp.server:main"
+agent-frame-mcp = "agent_frame.server:main"
+tunet-agents-mcp = "agent_frame.server:main"
+
+[project.urls]
+Homepage = "https://github.com/Tunet-xyz/agent_frame"
+Repository = "https://github.com/Tunet-xyz/agent_frame"
+Documentation = "https://github.com/Tunet-xyz/agent_frame/blob/main/docs/mcp.md"
+Issues = "https://github.com/Tunet-xyz/agent_frame/issues"
+Changelog = "https://github.com/Tunet-xyz/agent_frame/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tunet_agents_mcp"]
+packages = ["src/agent_frame", "src/tunet_agents_mcp"]
 
 # Whitelist source assets: never package Terraform caches, state or credentials.
 [tool.hatch.build.targets.wheel.force-include]
-"backends.json" = "tunet_agents_mcp/data/backends.json"
-"modules/definition/main.tf" = "tunet_agents_mcp/data/modules/definition/main.tf"
-"modules/definition/variables.tf" = "tunet_agents_mcp/data/modules/definition/variables.tf"
-"modules/inference/main.tf" = "tunet_agents_mcp/data/modules/inference/main.tf"
-"modules/inference/variables.tf" = "tunet_agents_mcp/data/modules/inference/variables.tf"
-"modules/inference/profiles.json" = "tunet_agents_mcp/data/modules/inference/profiles.json"
-"modules/grok/main.tf" = "tunet_agents_mcp/data/modules/grok/main.tf"
-"modules/grok/variables.tf" = "tunet_agents_mcp/data/modules/grok/variables.tf"
+"backends.json" = "agent_frame/data/backends.json"
+"modules/definition/main.tf" = "agent_frame/data/modules/definition/main.tf"
+"modules/definition/variables.tf" = "agent_frame/data/modules/definition/variables.tf"
+"modules/inference/main.tf" = "agent_frame/data/modules/inference/main.tf"
+"modules/inference/variables.tf" = "agent_frame/data/modules/inference/variables.tf"
+"modules/inference/profiles.json" = "agent_frame/data/modules/inference/profiles.json"
+"modules/grok/main.tf" = "agent_frame/data/modules/grok/main.tf"
+"modules/grok/variables.tf" = "agent_frame/data/modules/grok/variables.tf"
 
 [tool.hatch.build.targets.sdist]
 include = ["src", "modules", "backends.json", "pyproject.toml", "uv.lock", "README.md", "docs/mcp.md"]

@@ -1,4 +1,4 @@
-# Verification — v0.5.0, 16 November 2026
+# AgentFrame verification — v0.6.0, 17 November 2026
 
 Verified locally on Windows with Terraform 1.15.7 and Python 3.13. The locked
 providers are Mastercard REST API 2.0.1, Modus Agendi Claude Managed Agents
@@ -15,7 +15,7 @@ ran on Linux amd64 in the Docker VM and Linux arm64 under emulation, with Python
 | `python tests/integration.py` | 5 passed |
 | `python tests/google_integration.py` | 1 passed |
 | `python tests/frontier_integration.py` | 2 passed |
-| MCP integration suite over real stdio | 8 passed; packaged image also exercised separately |
+| MCP integration suite over real stdio | 10 passed from the installed wheel; containers exercised separately |
 | Linux amd64 container runtime and offline stdio | 2 passed |
 | Linux arm64 container runtime and offline stdio, under emulation | 2 passed |
 | PowerShell and Linux shell installers against real image archives | Passed |
@@ -26,6 +26,14 @@ ran on Linux amd64 in the Docker VM and Linux arm64 under emulation, with Python
 | Ruff check of the package, integration suites and packaging tool | Passed |
 | Eight unchanged Terraform examples | Previously verified in v0.3.0 |
 | Local Markdown links and manual-only workflow configuration | Passed |
+
+The repository rename preserved its GitHub database identity, private visibility,
+all five existing tags and every v0.5.0 release asset ID, size and SHA-256 digest.
+The previous Git URL redirects to `Tunet-xyz/agent_frame`. Terraform modules,
+provider declarations, lock file and catalogue are unchanged from v0.5.0.
+Canonical package, command, server, resource and container identities use
+AgentFrame; compatibility checks exercise the previous Python launcher, console
+command and resource URIs against the same implementation.
 
 The integration checks run the installed providers and actual Terraform CLI
 against local HTTP contract fixtures. They cover create, in-place update, no-op
@@ -59,14 +67,17 @@ the new suite and was not dispatched.
 
 The MCP suite starts actual client/server subprocesses from another directory
 with spaces, including legacy protocol negotiation and the console entry point.
-It checks four structured-output tools and two resources, every inference
+It checks four structured-output tools and four advertised resources (two
+canonical resources and two legacy aliases), every inference
 backend, a custom endpoint, concurrent compilation, missing Terraform, invalid
 inputs and recovery. Generated configurations for all implemented backends
 initialize and validate against a local provider mirror. Only a provider-free
 configuration is applied to test that template-looking prompt text stays literal.
 
 The built wheel was installed without editable source imports and the MCP suite
-passed again using its bundled catalogue and Terraform files. The package pins
+passed again using its bundled catalogue and Terraform files. Its distribution
+metadata is `AgentFrame`, its import namespace is `agent_frame`, and both console
+entry points are included. The package pins
 the official MCP Python SDK 2.3.0; its uv lock resolves 31 packages, including
 the project. Wheel contents exclude state, variable files, caches and credentials.
 Initial testing found missing structured output schemas and an AnyIO test-client
@@ -83,8 +94,10 @@ mounted into the MCP server.
 The PowerShell installer was exercised in PowerShell 7 and Windows PowerShell;
 the shell installer ran in an ephemeral official Linux Docker CLI helper against
 the same local engine. Both loaded the verified archive and created the expected
-client alias. Corrupt downloads were rejected before loading. Those checks found
-and fixed a Windows PowerShell module dependency and CRLF manifest handling.
+client alias. Corrupt downloads were rejected before loading. Both installers
+also loaded the original v0.5.0 archive using its historical name and created the
+new AgentFrame alias. The renamed checkout exposed CRLF shell-script endings;
+the script now uses LF and a Git attribute preserves that across Windows clones.
 
 Image bases are digest-pinned and the build context is an allowlist. The optional
 GHCR publishing workflow is manual-only and was not started. Terraform Registry

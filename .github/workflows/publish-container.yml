@@ -1,4 +1,4 @@
-name: Publish MCP container
+name: Publish AgentFrame MCP container
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
         description: Existing release tag version, without v
         type: string
         required: true
-        default: 0.5.0
+        default: 0.6.0
 
 permissions:
   contents: read
@@ -44,7 +44,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/tunet-xyz/terraform-agents-mcp:${{ inputs.version }}
+          tags: ghcr.io/tunet-xyz/agent-frame-mcp:${{ inputs.version }}
           build-args: |
             PACKAGE_VERSION=${{ inputs.version }}
             VCS_REF=${{ steps.release.outputs.revision }}

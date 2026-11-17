@@ -1,6 +1,7 @@
-# Terraform agents
+# AgentFrame
 
-Manage agents across vendors with common Terraform inputs and one output shape.
+AgentFrame defines and manages agents across providers through reusable Terraform
+modules and a companion MCP server, with common inputs and one output shape.
 Each backend declares whether it provisions a remote resource or exports a
 portable definition. This private Tunet module reuses existing providers:
 
@@ -40,7 +41,7 @@ the same Terraform modules and catalogue:
 
 ```shell
 uv sync --frozen
-uv run --frozen tunet-agents-mcp
+uv run --frozen agent-frame-mcp
 ```
 
 Use Python 3.11+ and Terraform on `PATH` for definition compilation. The server
@@ -58,6 +59,10 @@ The current Terraform implementation is a module. See the
 for the requirements to list it; no provider plugin or Registry account is
 claimed by this release.
 
+Upgrading from the previous project name? See [the AgentFrame migration guide](docs/migration.md)
+for Git remotes, Python/MCP names and container changes. Terraform resource
+addresses and existing release artifacts are preserved.
+
 ## Usage
 
 Terraform 1.10 or later is required. See [examples/both](examples/both/main.tf)
@@ -66,7 +71,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git?ref=v0.5.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git?ref=v0.6.0"
   providers = {
     restapi = restapi
     claude  = claude
@@ -88,13 +93,13 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.5.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.5.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `//modules/mistral?ref=v0.5.0` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Gemini runtime | `//modules/gemini?ref=v0.5.0` | [gemini](examples/gemini/main.tf) | `google` |
-| Grok definition | `//modules/grok?ref=v0.5.0` | [grok](examples/grok/main.tf) | none |
-| Muse definition | `//modules/muse?ref=v0.5.0` | [muse](examples/muse/main.tf) | none |
-| Frontier definitions | `//modules/inference?ref=v0.5.0` | [frontier](examples/frontier/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.6.0` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.6.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.6.0` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.6.0` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.6.0` | [grok](examples/grok/main.tf) | none |
+| Muse definition | `//modules/muse?ref=v0.6.0` | [muse](examples/muse/main.tf) | none |
+| Frontier definitions | `//modules/inference?ref=v0.6.0` | [frontier](examples/frontier/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -109,7 +114,7 @@ For example, Muse uses the same common inputs without a provider declaration:
 
 ```hcl
 module "muse" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/muse?ref=v0.5.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git//modules/muse?ref=v0.6.0"
 
   name         = "Review assistant"
   model        = var.muse_model

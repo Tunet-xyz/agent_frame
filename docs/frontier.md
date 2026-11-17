@@ -57,7 +57,7 @@ does not select a changing latest alias.
 
 ```hcl
 module "reviewer" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/inference?ref=v0.3.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git//modules/inference?ref=v0.6.0"
 
   profile      = "deepseek" # muse, qwen, kimi, glm, minimax, cohere, nvidia, openrouter
   name         = "Code reviewer"
@@ -70,7 +70,7 @@ module "reviewer" {
 }
 ```
 
-For Muse, `//modules/muse?ref=v0.3.0` fixes `profile = "muse"` internally.
+For Muse, `//modules/muse?ref=v0.6.0` fixes `profile = "muse"` internally.
 [The Muse example](../examples/muse/main.tf) and
 [multi-profile example](../examples/frontier/main.tf) use local module sources.
 They need no provider block and no API keys during `init`, `plan` or `apply`.
@@ -136,7 +136,7 @@ module. Use `profile = "custom"` with a caller-reviewed endpoint and protocol:
 
 ```hcl
 module "local_muse" {
-  source = "git::https://github.com/Tunet-xyz/terraform-agents.git//modules/inference?ref=v0.3.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git//modules/inference?ref=v0.6.0"
 
   profile      = "custom"
   name         = "Local Muse"

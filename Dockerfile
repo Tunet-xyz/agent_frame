@@ -13,11 +13,11 @@ COPY modules/grok/ ./modules/grok/
 RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-editable
 
 FROM python:3.13-slim-bookworm@sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72 AS runtime
-ARG PACKAGE_VERSION=0.5.0
+ARG PACKAGE_VERSION=0.6.0
 ARG VCS_REF=working-tree
-LABEL org.opencontainers.image.title="Tunet agents MCP" \
+LABEL org.opencontainers.image.title="AgentFrame MCP" \
       org.opencontainers.image.description="Stdio MCP server with bundled Terraform and agent definitions" \
-      org.opencontainers.image.source="https://github.com/Tunet-xyz/terraform-agents" \
+      org.opencontainers.image.source="https://github.com/Tunet-xyz/agent_frame" \
       org.opencontainers.image.version="${PACKAGE_VERSION}" \
       org.opencontainers.image.revision="${VCS_REF}"
 COPY --from=build /opt/venv /opt/venv
@@ -27,4 +27,4 @@ ENV PATH="/opt/venv/bin:${PATH}" HOME=/tmp TMPDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 CHECKPOINT_DISABLE=1
 USER 10001:10001
 WORKDIR /tmp
-ENTRYPOINT ["/opt/venv/bin/tunet-agents-mcp"]
+ENTRYPOINT ["/opt/venv/bin/agent-frame-mcp"]

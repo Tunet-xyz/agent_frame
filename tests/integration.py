@@ -304,7 +304,7 @@ class LifecycleTests(unittest.TestCase):
         self.server = AgentAPI()
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
-        self.temp = tempfile.TemporaryDirectory(prefix="terraform-agents-")
+        self.temp = tempfile.TemporaryDirectory(prefix="agent_frame-")
         # Cleanup is confined to the unique system-temp folder this test created.
         self.assertTrue(Path(self.temp.name).resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()))
 

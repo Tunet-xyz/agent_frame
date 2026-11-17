@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.6.0
+
+- Rename the project to AgentFrame and the GitHub repository to `agent_frame`,
+  preserving repository identity, visibility, existing tags and release assets.
+- Rename the Python distribution to `AgentFrame`, import namespace to
+  `agent_frame`, MCP command to `agent-frame-mcp`, and canonical resources to
+  `agent-frame://`. Retain the previous Python, console and resource names as
+  compatibility aliases.
+- Update container images, archive names, installers, workflows and generated
+  Terraform Git sources to the AgentFrame identity. Existing release binaries
+  remain unchanged; installers recognize legacy archive names for old versions.
+- Document migration without changing Terraform resource addresses, provider
+  dependencies, agent handles or backend behavior. Workflows remain manual-only.
+
 ## v0.5.0
 
 - Add digest-pinned Linux amd64/arm64 MCP images with Python, frozen dependencies,

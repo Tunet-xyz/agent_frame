@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -34,14 +35,14 @@ def main():
     output.mkdir(exist_ok=True)
     checksums = []
     for arch in args.architectures:
-        image = f"tunet-agents-mcp:{version}-linux-{arch}"
+        image = f"agent-frame-mcp:{version}-linux-{arch}"
         run("docker", "buildx", "build", "--quiet", "--platform", "linux/" + arch, "--load", "--provenance=false", "--tag", image,
             "--build-arg", "PACKAGE_VERSION=" + version, "--build-arg", "VCS_REF=" + revision, ".")
         env = {**os.environ, "MCP_CONTAINER_IMAGE": image, "MCP_EXPECTED_VERSION": version}
-        run("uv", "run", "--frozen", "python", "tests/container_integration.py", "-f", env=env)
+        run(sys.executable, "tests/container_integration.py", "-f", env=env)
         if args.no_archive:
             continue
-        archive = output / f"tunet-agents-mcp_{version}_linux_{arch}.docker.tar.gz"
+        archive = output / f"agent-frame-mcp_{version}_linux_{arch}.docker.tar.gz"
         with subprocess.Popen(["docker", "save", image], stdout=subprocess.PIPE, cwd=ROOT) as process:
             with archive.open("wb") as destination, gzip.GzipFile(filename="", fileobj=destination, mode="wb", compresslevel=6, mtime=0) as compressed:
                 shutil.copyfileobj(process.stdout, compressed)

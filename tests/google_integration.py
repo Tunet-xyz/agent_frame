@@ -162,7 +162,7 @@ class GoogleTerraform(Terraform):
 
 class GoogleLifecycleTests(unittest.TestCase):
     def test_native_adk_lifecycle(self):
-        with tempfile.TemporaryDirectory(prefix="terraform-agents-google-") as folder:
+        with tempfile.TemporaryDirectory(prefix="agent_frame-google-") as folder:
             self.assertTrue(Path(folder).resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()))
             server = GoogleAPI()
             thread = threading.Thread(target=server.serve_forever, daemon=True)

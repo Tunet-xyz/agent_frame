@@ -1,3 +1,3 @@
-"""MCP interface to the repository's Terraform modules."""
+"""Compatibility namespace; new integrations should import agent_frame."""
 
-__version__ = "0.5.0"
+from agent_frame import __version__ as __version__

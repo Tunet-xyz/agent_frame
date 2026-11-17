@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from functools import wraps
 from pathlib import Path
@@ -22,6 +23,7 @@ from mcp import Client, StdioServerParameters
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = json.loads((ROOT / "backends.json").read_text(encoding="utf-8"))
 PROFILES = json.loads((ROOT / "modules/inference/profiles.json").read_text(encoding="utf-8"))["profiles"]
+PROJECT = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 SECRET = "fixture-mcp-unused-credential"
 
 
@@ -38,9 +40,11 @@ class MCPTestBase(unittest.IsolatedAsyncioTestCase):
     mode = "auto"
     no_terraform = False
     console_entrypoint = False
+    module_name = "agent_frame"
+    console_command = "agent-frame-mcp"
 
     async def asyncSetUp(self):
-        self.temp = tempfile.TemporaryDirectory(prefix="Tunet MCP with spaces ")
+        self.temp = tempfile.TemporaryDirectory(prefix="AgentFrame MCP with spaces ")
         self.folder = Path(self.temp.name)
         self.assertTrue(self.folder.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()))
         self.addCleanup(self.temp.cleanup)
@@ -55,9 +59,9 @@ class MCPTestBase(unittest.IsolatedAsyncioTestCase):
         if self.no_terraform:
             env["PATH"] = str(self.folder / "no-executables")
         command = sys.executable
-        arguments = ["-m", "tunet_agents_mcp"]
+        arguments = ["-m", self.module_name]
         if self.console_entrypoint:
-            command = str(Path(sys.executable).parent / ("tunet-agents-mcp.exe" if os.name == "nt" else "tunet-agents-mcp"))
+            command = str(Path(sys.executable).parent / (self.console_command + (".exe" if os.name == "nt" else "")))
             arguments = []
         self.parameters = StdioServerParameters(command=command, args=arguments, cwd=self.folder, env=env)
 
@@ -103,6 +107,9 @@ class MCPTestBase(unittest.IsolatedAsyncioTestCase):
 class ProtocolTests(MCPTestBase):
     @connected
     async def test_discovery_and_resources(self):
+        self.assertEqual(self.client.server_info.name, "agent-frame")
+        self.assertEqual(self.client.server_info.title, "AgentFrame")
+        self.assertEqual(self.client.server_info.version, PROJECT["version"])
         tools = (await self.client.list_tools()).tools
         self.assertEqual({tool.name for tool in tools}, {"list_backends", "get_backend", "build_inference_agent", "render_terraform_configuration"})
         self.assertTrue(all(tool.annotations.read_only_hint and not tool.annotations.open_world_hint for tool in tools))
@@ -110,10 +117,13 @@ class ProtocolTests(MCPTestBase):
         filtered = await self.call("list_backends", {"management": "remote_agent"})
         self.assertEqual(set(filtered["backends"]), {"openai", "anthropic", "mistral"})
         resources = (await self.client.list_resources()).resources
-        self.assertEqual({str(resource.uri) for resource in resources}, {"terraform-agents://catalog", "terraform-agents://inference-profiles"})
-        content = await self.client.read_resource("terraform-agents://catalog")
+        self.assertEqual({str(resource.uri) for resource in resources}, {
+            "agent-frame://catalog", "agent-frame://inference-profiles",
+            "terraform-agents://catalog", "terraform-agents://inference-profiles",
+        })
+        content = await self.client.read_resource("agent-frame://catalog")
         self.assertEqual(json.loads(content.contents[0].text), CATALOG)
-        profile_resource = await self.client.read_resource("terraform-agents://inference-profiles")
+        profile_resource = await self.client.read_resource("agent-frame://inference-profiles")
         self.assertEqual(json.loads(profile_resource.contents[0].text)["profiles"], PROFILES)
 
     @connected
@@ -187,6 +197,7 @@ class ProtocolTests(MCPTestBase):
                 }})
                 self.assertEqual(rendered["remote_lifecycle"], entry["remote_lifecycle"])
                 configuration = json.loads(rendered["configuration_json"])
+                self.assertTrue(configuration["module"]["assistant"]["source"].startswith("git::https://github.com/Tunet-xyz/agent_frame.git//modules/"))
                 if backend in ("openai", "mistral"):
                     self.assertTrue(configuration["variable"]["api_key"]["ephemeral"])
                 await asyncio.to_thread(self.terraform, configuration, backend)
@@ -200,15 +211,37 @@ class ProtocolTests(MCPTestBase):
         self.assertNotEqual(results[0]["fingerprint"], results[1]["fingerprint"])
 
 
+class ConsoleProtocolTests(MCPTestBase):
+    console_entrypoint = True
+
+    @connected
+    async def test_agentframe_console_identity(self):
+        self.assertEqual(self.client.server_info.name, "agent-frame")
+        self.assertEqual((await self.call("get_backend", {"backend": "muse"}))["backend"], "muse")
+
+
 class LegacyProtocolTests(MCPTestBase):
     mode = "legacy"
     console_entrypoint = True
+    console_command = "tunet-agents-mcp"
 
     @connected
     async def test_legacy_client_can_discover_and_compile(self):
         self.assertEqual(len((await self.client.list_tools()).tools), 4)
         result = await self.call("build_inference_agent", {"spec": {"backend": "muse", "name": "Legacy Muse", "model": "fixture-model"}})
         self.assertEqual(result["agent"]["vendor"], "meta")
+        resource = await self.client.read_resource("terraform-agents://catalog")
+        self.assertEqual(json.loads(resource.contents[0].text), CATALOG)
+
+
+class LegacyModuleTests(MCPTestBase):
+    module_name = "tunet_agents_mcp"
+
+    @connected
+    async def test_legacy_module_and_profile_resource(self):
+        self.assertEqual(len((await self.client.list_tools()).tools), 4)
+        resource = await self.client.read_resource("terraform-agents://inference-profiles")
+        self.assertEqual(json.loads(resource.contents[0].text)["profiles"], PROFILES)
 
 
 class MissingTerraformTests(MCPTestBase):

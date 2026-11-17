@@ -6,6 +6,8 @@
 !README.md
 !backends.json
 !src/
+!src/agent_frame/
+!src/agent_frame/*.py
 !src/tunet_agents_mcp/
 !src/tunet_agents_mcp/*.py
 !modules/
