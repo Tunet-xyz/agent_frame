@@ -3,7 +3,7 @@
 AgentFrame defines and manages agents across providers through reusable Terraform
 modules and a companion MCP server, with common inputs and one output shape.
 Each backend declares whether it provisions a remote resource or exports a
-portable definition. This private Tunet module reuses existing providers:
+portable definition. This MIT-licensed Tunet module reuses existing providers:
 
 | Platform | Implementation | Verified dependency |
 | --- | --- | --- |
@@ -55,7 +55,7 @@ client. See [container downloads and client setup](docs/distribution.md).
 No host Python, uv or Terraform is needed for that distribution.
 
 The current Terraform implementation is a module. See the
-[Registry publishing route and remaining account/visibility choices](docs/registry-publishing.md)
+[Registry module source and publication status](docs/registry-publishing.md)
 for the requirements to list it; no provider plugin or Registry account is
 claimed by this release.
 
@@ -71,7 +71,7 @@ calling configuration and pass them explicitly:
 
 ```hcl
 module "assistant" {
-  source = "git::https://github.com/Tunet-xyz/agent_frame.git?ref=v0.6.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git?ref=v0.6.1"
   providers = {
     restapi = restapi
     claude  = claude
@@ -93,13 +93,13 @@ using only one platform, use the vendor entry point. They share the same
 | Entry point | Source suffix | Example | Provider required |
 | --- | --- | --- | --- |
 | Shared selector | repository root | [both](examples/both/main.tf) | `restapi`, `claude` |
-| OpenAI only | `//modules/openai?ref=v0.6.0` | [openai](examples/openai/main.tf) | `restapi` |
-| Claude only | `//modules/anthropic?ref=v0.6.0` | [anthropic](examples/anthropic/main.tf) | `claude` |
-| Mistral | `//modules/mistral?ref=v0.6.0` | [mistral](examples/mistral/main.tf) | `restapi` |
-| Gemini runtime | `//modules/gemini?ref=v0.6.0` | [gemini](examples/gemini/main.tf) | `google` |
-| Grok definition | `//modules/grok?ref=v0.6.0` | [grok](examples/grok/main.tf) | none |
-| Muse definition | `//modules/muse?ref=v0.6.0` | [muse](examples/muse/main.tf) | none |
-| Frontier definitions | `//modules/inference?ref=v0.6.0` | [frontier](examples/frontier/main.tf) | none |
+| OpenAI only | `//modules/openai?ref=v0.6.1` | [openai](examples/openai/main.tf) | `restapi` |
+| Claude only | `//modules/anthropic?ref=v0.6.1` | [anthropic](examples/anthropic/main.tf) | `claude` |
+| Mistral | `//modules/mistral?ref=v0.6.1` | [mistral](examples/mistral/main.tf) | `restapi` |
+| Gemini runtime | `//modules/gemini?ref=v0.6.1` | [gemini](examples/gemini/main.tf) | `google` |
+| Grok definition | `//modules/grok?ref=v0.6.1` | [grok](examples/grok/main.tf) | none |
+| Muse definition | `//modules/muse?ref=v0.6.1` | [muse](examples/muse/main.tf) | none |
+| Frontier definitions | `//modules/inference?ref=v0.6.1` | [frontier](examples/frontier/main.tf) | none |
 
 The vendor entry points use `options` for vendor settings; the shared selector
 uses `openai` or `anthropic`. Changing `vendor` destroys the old agent and creates
@@ -114,7 +114,7 @@ For example, Muse uses the same common inputs without a provider declaration:
 
 ```hcl
 module "muse" {
-  source = "git::https://github.com/Tunet-xyz/agent_frame.git//modules/muse?ref=v0.6.0"
+  source = "git::https://github.com/Tunet-xyz/agent_frame.git//modules/muse?ref=v0.6.1"
 
   name         = "Review assistant"
   model        = var.muse_model
@@ -155,7 +155,7 @@ instructions configure a real ADK deployment. See [Gemini setup and provider
 limits](docs/gemini.md) before applying it.
 
 Inject credentials into the environment from your normal secret store. Use
-non-interactive Git authentication to download this private module. No keys,
+the public Git source to download this module. No keys,
 state, or variable files belong in the repository. Instructions, tool settings,
 and metadata are retained in Terraform state, so protect the state backend.
 
@@ -254,3 +254,8 @@ Live vendor-account verification has not been performed. The fixtures
 cannot establish account entitlements, model availability, service-side
 validation of every nested tool shape, or beta API compatibility in your account.
 The checked-in workflow is manual-only and agents must not start it.
+
+## License
+
+AgentFrame is available under the [MIT license](LICENSE). Container images also
+include Terraform's upstream license separately.

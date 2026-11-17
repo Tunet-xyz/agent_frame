@@ -1,4 +1,4 @@
-# Terraform Registry publishing route
+# Terraform Registry publication
 
 Reviewed on 17 November 2026. AgentFrame is a **Terraform module** reusing
 existing providers, plus an MCP server. It has no Terraform provider plugin.
@@ -11,7 +11,7 @@ Registering a publisher account does not turn Terraform module code into a
 provider. A custom provider would be a separate implementation and maintenance
 commitment; it is not needed to reuse the providers selected here.
 
-## Public module listing
+## Public module source
 
 HashiCorp's [module publishing requirements](https://developer.hashicorp.com/terraform/registry/modules/publish)
 require a public GitHub repository named `terraform-PROVIDER-NAME`, a description,
@@ -25,36 +25,42 @@ Current status:
 | Reusable module with root and independent submodules | Present |
 | README, examples, declared inputs/outputs and provider dependencies | Present |
 | Version tags | Present |
-| Public repository | Not met: `Tunet-xyz/agent_frame` is private |
-| Eligible three-part repository name | Not met: `agent_frame` does not use `terraform-PROVIDER-NAME` |
-| Registry GitHub OAuth connection | Not available in this agent session |
+| Canonical public project | `Tunet-xyz/agent_frame` |
+| License | MIT, copyright Tunet Ltd; see [LICENSE](../LICENSE) |
+| Registry source repository | `Tunet-xyz/terraform-restapi-agent-frame` |
+| Version | `v0.6.1` |
+| Intended Registry address | `Tunet-xyz/agent-frame/restapi` |
+| Initial Registry publication | Pending the owner's GitHub OAuth connection and Publish Module action |
 
-A possible public source would be `Tunet-xyz/terraform-restapi-agent-frame`, with
-`restapi` identifying the root's main provider and a module address of
-`Tunet-xyz/agent-frame/restapi`. The module can still include the other provider
-adapters. This name is a proposal, not a reserved or published Registry address.
+The canonical project keeps its `agent_frame` name, MCP package and container
+distribution. The companion Registry repository contains the Terraform release
+source, examples, contract fixtures, catalogue, documentation and license.
+Its `restapi` segment identifies the compatibility root's primary provider;
+the other vendor submodules remain available in the same package.
 
-Before publishing, the owner must choose whether the module source should be
-public and choose its license. A dedicated public export can preserve the
-existing private repository and its Git URLs, but its documentation and MCP
-generated module sources must be updated to point to the public source. The
-final public source must be reviewed and tested before Registry publication.
-The existing repository was renamed to `agent_frame` with its private visibility
-and release history preserved. No separate public repository has been created.
+The Registry repository is a release export, not an independent implementation.
+Its `SOURCE.json` records the immutable upstream revision and exported file
+hashes. Terraform modules and resource addresses are preserved. Changes belong
+in `agent_frame` first, then a reviewed and tested export receives the matching
+semantic version tag. No Python package, Docker image, provider binary, local
+state, credentials or GitHub Actions workflow is included in the export.
 
-After those choices, use Upload on the [Terraform Registry](https://registry.terraform.io/)
-to connect the owner's GitHub identity, authorize Tunet-xyz access where needed,
-and publish the eligible module. Signup and OAuth require the account owner's
-authenticated interaction; no browser session or credentials are copied here.
+## Complete the initial listing
 
-## Private alternative
+1. Open Upload on the [Terraform Registry](https://registry.terraform.io/).
+2. Connect the owner's GitHub identity and grant Tunet-xyz access where needed.
+3. Choose `Tunet-xyz/terraform-restapi-agent-frame` and Publish Module.
+4. Verify `0.6.1` appears at `Tunet-xyz/agent-frame/restapi`, then test a fresh
+   `terraform init` using that Registry address.
 
-The [HCP Terraform private module registry](https://developer.hashicorp.com/terraform/cloud-docs/registry/publish-modules)
-supports private source repositories. It needs an HCP Terraform organization,
-the appropriate registry permissions and a VCS connection. No HCP organization
-or authenticated Terraform token is configured in this session, and no relevant
-connected Terraform plugin was available when checked.
+No Registry authentication is configured in the agent environment, and no
+Terraform connector was found. The public Registry's documented API exposes
+module discovery and downloads; initial publication uses the owner's GitHub
+OAuth session. No user's browser profile or signed-in session is accessed.
 
-Existing private Git sources remain usable without a Registry account. Public
-module publication or HCP onboarding is pending the owner's choice and account
-connection; neither has been represented as complete.
+The intended address is not advertised as a live listing until the Registry
+versions API returns it and a fresh CLI initialization succeeds. Until then,
+the public Git sources are usable directly without a Registry account.
+
+Once connected, the Registry's webhook observes subsequent version tags.
+GitHub Actions remains manual-only; agents do not start workflows.

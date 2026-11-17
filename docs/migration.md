@@ -81,3 +81,6 @@ The optional GHCR workflow targets the new image name and remains manual-only.
 No workflow was dispatched and no package or repository was made public as
 part of this rename. Terraform Registry account onboarding and any separate
 Registry publishing repository remain distinct, unfinished setup steps.
+
+Version 0.6.1 subsequently makes AgentFrame public under MIT and prepares the
+Registry source repository. See [the current publication status](registry-publishing.md).

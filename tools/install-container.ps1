@@ -1,11 +1,10 @@
 [CmdletBinding()]
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.6.0',
+    [ValidatePattern('^\d+\.\d+\.\d+$')][string]$Version = '0.6.1',
     [string]$ArchiveDirectory
 )
 
 $ErrorActionPreference = 'Stop'
-$env:GH_PROMPT_DISABLED = '1'
 $platform = & docker version --format '{{.Server.Os}}/{{.Server.Arch}}'
 if ($LASTEXITCODE -ne 0) { throw 'Start a Linux Docker engine before installing the image.' }
 if ($platform -notin @('linux/amd64', 'linux/arm64')) { throw "Unsupported Docker platform: $platform" }
@@ -23,8 +22,10 @@ try {
         $download = Join-Path $tempRoot ('agentframe-container-' + [Guid]::NewGuid().ToString('N'))
         New-Item -ItemType Directory -Path $download | Out-Null
         $ownedDownload = $true
-        & gh release download "v$Version" --repo Tunet-xyz/agent_frame --pattern $asset --pattern SHA256SUMS --dir $download
-        if ($LASTEXITCODE -ne 0) { throw 'Release download failed. Existing non-interactive GitHub access to the private repository is required.' }
+        $releaseUrl = "https://github.com/Tunet-xyz/agent_frame/releases/download/v$Version"
+        foreach ($name in @($asset, 'SHA256SUMS')) {
+            Invoke-WebRequest -UseBasicParsing -Uri "$releaseUrl/$name" -OutFile (Join-Path $download $name)
+        }
     }
     $checksums = @(Get-Content -LiteralPath (Join-Path $download 'SHA256SUMS') | ForEach-Object {
         $parts = $_ -split '\s+', 2

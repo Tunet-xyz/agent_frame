@@ -3,11 +3,11 @@
 The AgentFrame `agent-frame-mcp` server makes the shared agent catalogue and
 Terraform definitions available to MCP clients. It uses the
 [official Python MCP SDK](https://github.com/modelcontextprotocol/python-sdk),
-pinned to 2.3.0, and communicates over local stdio. The package version is 0.6.0.
+pinned to 2.3.0, and communicates over local stdio. The package version is 0.6.1.
 
 ## Install and launch
 
-Use Python 3.11 or newer. From the checked-out private repository:
+Use Python 3.11 or newer. From the checked-out repository:
 
 ```shell
 uv sync --frozen
@@ -23,7 +23,7 @@ definitions. Catalogue discovery and Terraform configuration generation work
 without Terraform. No vendor API keys, ADC, GitHub credentials or cloud account
 are needed to run the server or compile an inference definition.
 
-The package is private and has not been published to PyPI. Build a wheel with
+The package is MIT-licensed and has not been published to PyPI. Build a wheel with
 `uv build --wheel` if needed. The wheel includes a fixed whitelist of the
 catalogue and provider-free Terraform source files. It runs without the original
 checkout; the consuming application still needs Terraform for compilation.
@@ -132,7 +132,7 @@ Call `render_terraform_configuration` with the same `spec` shape, for example
 `backend = "openai"`, `"anthropic"`, `"mistral"` or `"gemini"`. It returns a
 `configuration_json` string, the suggested filename, credential setup notes and
 the remote-lifecycle capability. Module sources are pinned to this release's
-`v0.6.0` tag.
+`v0.6.1` tag.
 
 OpenAI and Mistral configurations declare the locked REST provider and an
 ephemeral, sensitive `api_key` input; supply `TF_VAR_api_key` separately when
@@ -144,7 +144,7 @@ configuration does not include any credential value.
 The tool also renders provider-free backends. Review and save the generated
 configuration in the intended workspace, then run `terraform init`, `plan` and
 `apply` yourself or through your normal infrastructure workflow. Downloading the
-private module requires non-interactive Git authentication. The server itself
+public module requires no GitHub authentication. The server itself
 does not need Git access for discovery, rendering or definition compilation.
 
 ## Isolation and limits

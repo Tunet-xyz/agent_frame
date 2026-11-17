@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-version=${1:-0.6.0}
+version=${1:-0.6.1}
 case "$version" in *[!0-9.]*|'') echo 'Supply a stable x.y.z version.' >&2; exit 1;; esac
 printf '%s\n' "$version" | awk -F. 'NF != 3 || $1 !~ /^[0-9]+$/ || $2 !~ /^[0-9]+$/ || $3 !~ /^[0-9]+$/ {exit 1}'
 platform=$(docker version --format '{{.Server.Os}}/{{.Server.Arch}}')
@@ -19,7 +19,14 @@ else
     download=$(mktemp -d "$temp_root/agentframe-container-XXXXXXXX")
     case "$download" in "$temp_root"/agentframe-container-*) ;; *) exit 1;; esac
     trap 'rm -rf -- "$download"' EXIT HUP INT TERM
-    GH_PROMPT_DISABLED=1 gh release download "v$version" --repo Tunet-xyz/agent_frame --pattern "$asset" --pattern SHA256SUMS --dir "$download"
+    release_url="https://github.com/Tunet-xyz/agent_frame/releases/download/v$version"
+    for name in "$asset" SHA256SUMS; do
+        if command -v curl >/dev/null 2>&1; then
+            curl --fail --location --silent --show-error "$release_url/$name" --output "$download/$name"
+        else
+            wget -q "$release_url/$name" -O "$download/$name"
+        fi
+    done
 fi
 expected=$(awk -v asset="$asset" '{sub(/\r$/, "")} $2 == asset {print $1}' "$download/SHA256SUMS")
 test "${#expected}" = 64 || { echo 'The checksum manifest needs one valid entry for this image.' >&2; exit 1; }

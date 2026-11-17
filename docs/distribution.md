@@ -6,9 +6,9 @@ they do not need host Python, uv, Terraform or model API keys. Docker Desktop
 on Windows and macOS runs these Linux images.
 
 Versioned `linux/amd64` and `linux/arm64` image archives are distributed through
-the repository's private GitHub Releases with a `SHA256SUMS` file. This uses
-existing repository access instead of requiring a separate package-registry
-credential. The files are Docker image archives, compressed with gzip;
+the repository's public GitHub Releases with a `SHA256SUMS` file. Downloads
+require no GitHub account or package-registry credential. The files are Docker
+image archives, compressed with gzip;
 [Docker loads them directly](https://docs.docker.com/reference/cli/docker/image/load/).
 
 Existing releases retain their historical filenames. The current installers
@@ -17,7 +17,7 @@ recognize those names when explicitly selecting an older version; see
 
 ## Install a prebuilt image
 
-With the repository checked out and GitHub CLI access already configured:
+With the repository checked out:
 
 ```powershell
 # Windows PowerShell
@@ -30,19 +30,20 @@ sh tools/install-container.sh
 ```
 
 The installer detects the Docker engine's architecture, downloads the matching
-v0.6.0 archive and checksums, verifies its SHA-256, loads it and creates the
-local `agent-frame-mcp:0.6.0` alias. It never starts an authentication flow.
+v0.6.1 archive and checksums, verifies its SHA-256, loads it and creates the
+local `agent-frame-mcp:0.6.1` alias. It never starts an authentication flow.
 The installers are also attached to the release, so a checkout is optional:
 
 ```powershell
-gh release download v0.6.0 --repo Tunet-xyz/agent_frame --pattern install-container.ps1
+Invoke-WebRequest -UseBasicParsing https://github.com/Tunet-xyz/agent_frame/releases/download/v0.6.1/install-container.ps1 -OutFile install-container.ps1
 ./install-container.ps1
 ```
 
-On Linux/macOS, download `install-container.sh` instead and run it with `sh`.
+On Linux/macOS, download `install-container.sh` from the release instead and run
+it with `sh`. The shell installer uses `curl` or `wget` for HTTPS downloads.
 You may also download the archive and checksum file yourself, then pass their
 directory as `-ArchiveDirectory PATH` in PowerShell or the second shell-script
-argument (`sh tools/install-container.sh 0.6.0 PATH`).
+argument (`sh tools/install-container.sh 0.6.1 PATH`).
 
 ## MCP client configuration
 
@@ -57,7 +58,7 @@ After installing the image, configure the client's stdio command:
         "run", "--rm", "-i", "--read-only", "--network", "none",
         "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
         "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m,mode=1777",
-        "agent-frame-mcp:0.6.0"
+        "agent-frame-mcp:0.6.1"
       ]
     }
   }
@@ -73,8 +74,8 @@ The tools and behavior are described in [MCP setup](mcp.md).
 ## Build and verify locally
 
 ```sh
-docker build --tag agent-frame-mcp:0.6.0 .
-MCP_CONTAINER_IMAGE=agent-frame-mcp:0.6.0 uv run --frozen python tests/container_integration.py
+docker build --tag agent-frame-mcp:0.6.1 .
+MCP_CONTAINER_IMAGE=agent-frame-mcp:0.6.1 uv run --frozen python tests/container_integration.py
 ```
 
 For release maintainers, the packaging command builds and tests both Linux
@@ -99,6 +100,6 @@ image at `ghcr.io/tunet-xyz/agent-frame-mcp:VERSION` using the repository's
 workflow token. Agents must never start or rerun it.
 
 That registry image is available only after a successful user-started publish;
-the initial distribution uses the GitHub Release downloads above. Package
-visibility and access remain governed by GitHub settings. No public image or
-repository visibility change is made by this work.
+the initial distribution uses the GitHub Release downloads above. GHCR package
+visibility remains governed by GitHub settings; public GitHub Release archives
+are available independently of that workflow.

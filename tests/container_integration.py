@@ -12,8 +12,8 @@ from pathlib import Path
 from mcp import Client, StdioServerParameters
 
 ROOT = Path(__file__).resolve().parents[1]
-IMAGE = os.environ.get("MCP_CONTAINER_IMAGE", "agent-frame-mcp:0.6.0-linux-amd64")
-VERSION = os.environ.get("MCP_EXPECTED_VERSION", "0.6.0")
+IMAGE = os.environ.get("MCP_CONTAINER_IMAGE", "agent-frame-mcp:0.6.1-linux-amd64")
+VERSION = os.environ.get("MCP_EXPECTED_VERSION", "0.6.1")
 FLAGS = ["--rm", "--read-only", "--network", "none", "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m,mode=1777"]
 
 
@@ -25,7 +25,9 @@ class ContainerTests(unittest.TestCase):
             "print(json.dumps({'uid':os.getuid(),'version':__version__,'distribution':metadata('AgentFrame')['Name'],"
             "'terraform':json.loads(subprocess.check_output(['terraform','version','-json']))['terraform_version'],"
             "'assets':sorted(str(p.relative_to(data_root())) for p in data_root().rglob('*') if p.is_file()),"
-            "'license':Path('/usr/share/doc/terraform/LICENSE.txt').is_file()}))"
+            "'license':Path('/usr/share/doc/terraform/LICENSE.txt').is_file(),"
+            "'agentframe_license':Path('/usr/share/doc/agentframe/LICENSE.txt').read_text(),"
+            "'package_license':metadata('AgentFrame')['License-Expression']}))"
         )
         result = subprocess.run(["docker", "run", *FLAGS, "--entrypoint", "python", IMAGE, "-c", script], capture_output=True, text=True, timeout=90, check=False)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -35,6 +37,8 @@ class ContainerTests(unittest.TestCase):
         self.assertEqual(data["distribution"], "AgentFrame")
         self.assertEqual(data["terraform"], "1.15.7")
         self.assertTrue(data["license"])
+        self.assertIn("MIT License", data["agentframe_license"])
+        self.assertEqual(data["package_license"], "MIT")
         self.assertEqual(len(data["assets"]), 8)
         self.assertFalse(any("tfstate" in name or "tfvars" in name or ".terraform/" in name for name in data["assets"]))
 

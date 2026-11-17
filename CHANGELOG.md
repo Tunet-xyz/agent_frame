@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.6.1
+
+- Publish AgentFrame under the MIT license, matching Tunet's public projects.
+  Include the license in Python distributions and container images.
+- Remove private-source installation requirements. Container installers download
+  public release assets directly over HTTPS without a GitHub login.
+- Prepare a Terraform-only release source, `terraform-restapi-agent-frame`, for
+  the Registry module address `Tunet-xyz/agent-frame/restapi`. Initial Registry
+  publication requires the owner's GitHub OAuth connection.
+
 ## v0.6.0
 
 - Rename the project to AgentFrame and the GitHub repository to `agent_frame`,

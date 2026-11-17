@@ -7,7 +7,7 @@ on:
         description: Existing release tag version, without v
         type: string
         required: true
-        default: 0.6.0
+        default: 0.6.1
 
 permissions:
   contents: read

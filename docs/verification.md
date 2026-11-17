@@ -1,4 +1,36 @@
-# AgentFrame verification — v0.6.0, 17 November 2026
+# AgentFrame verification
+
+## v0.6.1 — 17 November 2026
+
+Public-release preparation passed the 30 Terraform tests, 5 saved-agent lifecycle
+tests, 1 Google lifecycle test, 2 frontier CLI tests and 10 real stdio MCP tests
+from a non-editable wheel installation. Both Linux container suites passed,
+including ARM64 under emulation. The wheel and runtime images contain the MIT
+license; Terraform's upstream license remains separate. The package metadata
+declares `MIT` and no longer marks the source private.
+
+PowerShell 7, Windows PowerShell and Linux shell checks exercise valid image
+archives with CRLF manifests and reject corrupted archives before loading.
+Public HTTPS delivery is checked separately after the release is published.
+The installers no longer require GitHub CLI authentication. Documentation links,
+frozen dependency metadata, Python lint and manual-only workflows pass.
+
+Basic tracked-history checks found no supported key formats, private-key blocks,
+Terraform state, variable files or local credential files. Only tracked source
+is published; ignored local environments, caches and build outputs are excluded.
+Existing tags and published assets are preserved by the visibility change.
+
+Initial Terraform Registry publication remains dependent on the owner's GitHub
+OAuth connection. A prepared GitHub repository and tag do not establish a live
+Registry listing: the Registry versions API and a fresh CLI installation must
+both succeed before that step is reported complete. See [publication status](registry-publishing.md).
+
+No live model API was called. UI testing is not applicable to the Terraform,
+package or MCP changes because they ship CLI and stdio flows. The Registry's
+authenticated publishing UI is not exercised by the agent. GitHub Actions was
+not started.
+
+## v0.6.0 — 17 November 2026
 
 Verified locally on Windows with Terraform 1.15.7 and Python 3.13. The locked
 providers are Mastercard REST API 2.0.1, Modus Agendi Claude Managed Agents

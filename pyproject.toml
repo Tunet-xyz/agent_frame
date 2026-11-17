@@ -4,11 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AgentFrame"
-version = "0.6.0"
+version = "0.6.1"
 description = "AgentFrame: reusable AI agent definitions, Terraform modules and an MCP interface"
 readme = "README.md"
 requires-python = ">=3.11"
-classifiers = ["Private :: Do Not Upload"]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = ["mcp==2.3.0"]
 
 [project.scripts]
@@ -37,4 +38,4 @@ packages = ["src/agent_frame", "src/tunet_agents_mcp"]
 "modules/grok/variables.tf" = "agent_frame/data/modules/grok/variables.tf"
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "modules", "backends.json", "pyproject.toml", "uv.lock", "README.md", "docs/mcp.md"]
+include = ["src", "modules", "backends.json", "pyproject.toml", "uv.lock", "README.md", "LICENSE", "docs/mcp.md"]
