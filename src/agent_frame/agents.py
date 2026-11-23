@@ -164,14 +164,21 @@ def compile_inference(spec: AgentSpec) -> dict:
         return {key: value["value"] for key, value in output.items()}
 
 
+def _escape_template(text: str) -> str:
+    return text.replace("${", "$${").replace("%{", "%%{")
+
+
 def literal(value: JsonValue) -> JsonValue:
-    """Escape Terraform JSON template sequences in caller-supplied strings."""
+    """Escape Terraform JSON template sequences in caller-supplied strings.
+
+    Terraform evaluates object keys as templates too, so keys are escaped as well.
+    """
     if isinstance(value, str):
-        return value.replace("${", "$${").replace("%{", "%%{")
+        return _escape_template(value)
     if isinstance(value, list):
         return [literal(item) for item in value]
     if isinstance(value, dict):
-        return {key: literal(item) for key, item in value.items()}
+        return {_escape_template(key): literal(item) for key, item in value.items()}
     return value
 
 

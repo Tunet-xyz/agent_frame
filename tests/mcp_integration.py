@@ -159,9 +159,13 @@ class ProtocolTests(MCPTestBase):
         self.assertEqual(json.loads(result["runtime"]["request_template_json"])["messages"][0]["content"], instructions)
         spec.pop("custom_profile")
         spec["backend"] = "muse"
+        # Terraform evaluates object keys as templates, so keys must stay literal too.
+        metadata = {'${upper("tenant")}': "%{ if true }kept"}
+        spec["metadata"] = metadata
         rendered = await self.call("render_terraform_configuration", {"spec": spec})
         applied = await asyncio.to_thread(self.terraform, json.loads(rendered["configuration_json"]), "muse", apply=True)
         self.assertEqual(applied["definition"]["instructions"], instructions)
+        self.assertEqual(applied["definition"]["metadata"], metadata)
 
     @connected
     async def test_errors_and_recovery(self):

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Escape Terraform template syntax (`${` and `%{`) in the object keys of
+  generated configuration, not only in values. Terraform evaluates object keys
+  in JSON configuration as templates, so a `metadata` or `options` key passed to
+  `render_terraform_configuration` was evaluated when the configuration was
+  planned.
+
 ## v0.6.1
 
 - Publish AgentFrame under the MIT license, matching Tunet's public projects.
